@@ -204,6 +204,37 @@
             box-shadow: 0 0 0 3px #fff, 0 0 0 6px #4299e1;
         }
 
+        .palette-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .palette-tab {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            color: #4a5568;
+        }
+
+        .palette-tab:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+
+        .palette-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
         .slider-container {
             background: white;
             padding: 15px;
@@ -1138,70 +1169,64 @@
                     newData[15][9] = wingDark;
                     newData[16][9] = wingDark;
                 } else {
-                    // Copy accurate Minecraft chicken design
-                    // Red Comb
+                    // Copy classic blocky Minecraft chicken design
                     newData[0][7] = '#dc2626';
                     newData[0][8] = '#dc2626';
                     
-                    // Small Head
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 1; y <= 3; y++) {
+                            newData[y][x] = bodyColor;
+                        }
+                    }
+                    newData[2][9] = bodyDark;
+                    
+                    newData[2][10] = '#fbbf24';
+                    
+                    newData[4][7] = '#dc2626';
+                    
+                    newData[2][6] = '#000000';
+                    newData[2][9] = '#000000';
+                    
                     for(let x = 7; x <= 8; x++) {
-                        for(let y = 1; y <= 2; y++) {
-                            newData[y][x] = bodyColor;
-                        }
+                        newData[4][x] = bodyColor;
+                        newData[5][x] = bodyColor;
                     }
-                    newData[2][8] = bodyDark;
                     
-                    // Yellow Beak
-                    newData[2][9] = '#fbbf24';
-                    
-                    // Red Wattle
-                    newData[3][7] = '#dc2626';
-                    newData[3][8] = '#dc2626';
-                    
-                    // Eyes
-                    newData[1][7] = '#000000';
-                    newData[1][8] = '#000000';
-                    
-                    // Large Body
                     for(let x = 4; x <= 11; x++) {
-                        for(let y = 4; y <= 9; y++) {
+                        for(let y = 6; y <= 10; y++) {
                             newData[y][x] = bodyColor;
                         }
                     }
-                    for(let y = 4; y <= 9; y++) {
+                    for(let y = 6; y <= 10; y++) {
                         newData[y][11] = bodyDark;
                     }
-                    for(let x = 4; x <= 10; x++) {
-                        newData[9][x] = bodyDark;
-                    }
+                    newData[10][10] = bodyDark;
                     
-                    // Wings
                     for(let x = 2; x <= 3; x++) {
-                        for(let y = 5; y <= 8; y++) {
+                        for(let y = 7; y <= 9; y++) {
                             newData[y][x] = wingColor;
                         }
                     }
-                    newData[6][3] = wingDark;
-                    newData[7][3] = wingDark;
+                    newData[8][3] = wingDark;
                     
                     for(let x = 12; x <= 13; x++) {
-                        for(let y = 5; y <= 8; y++) {
+                        for(let y = 7; y <= 9; y++) {
                             newData[y][x] = wingColor;
                         }
                     }
-                    newData[6][12] = wingDark;
-                    newData[7][12] = wingDark;
+                    newData[8][12] = wingDark;
                     
-                    // Tail
-                    newData[10][4] = wingColor;
-                    newData[10][5] = wingColor;
+                    newData[11][4] = wingColor;
+                    newData[11][5] = wingColor;
+                    newData[12][4] = wingColor;
+                    newData[12][5] = wingColor;
+                    newData[13][5] = wingColor;
+                    newData[11][4] = wingDark;
                     
-                    // Yellow Legs
-                    for(let x = 6; x <= 9; x++) {
-                        newData[10][x] = '#fbbf24';
-                        newData[11][x] = '#fbbf24';
-                        newData[12][x] = '#fbbf24';
-                    }
+                    newData[11][6] = '#fbbf24';
+                    newData[11][7] = '#fbbf24';
+                    newData[11][8] = '#fbbf24';
+                    newData[11][9] = '#fbbf24';
                 }
                 
                 setPixelData(newData);
@@ -1212,211 +1237,199 @@
                 setShowAdvancedEditor(false);
             };
 
-            // Draw Minecraft bird on canvas
+            // Draw Minecraft bird on canvas - Simple front-facing pixel art
             useEffect(() => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
-                const scale = 8; // Increased pixel size multiplier to make bird larger
+                const scale = 12; // Pixel size
                 
                 // Clear canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // If advanced editor has data, use that instead
+                // Helper functions for shading
+                const darken = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = Math.max(0, (num >> 16) - amt);
+                    const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+                    const B = Math.max(0, (num & 0x0000FF) - amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+                };
+                
+                const lighten = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = Math.min(255, (num >> 16) + amt);
+                    const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+                    const B = Math.min(255, (num & 0x0000FF) + amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+                };
+                
+                // Create shaded variations
+                const bodyLight = lighten(bodyColor, 15);
+                const bodyDark = darken(bodyColor, 15);
+                const wingLight = lighten(wingColor, 15);
+                const wingDark = darken(wingColor, 15);
+                
+                // If advanced editor has data, use that
                 if (pixelData && pixelData.some(row => row.some(pixel => pixel !== 'transparent'))) {
-                    const offsetX = Math.floor((canvas.width / scale - 16) / 2);
-                    const offsetY = Math.floor((canvas.height / scale - 20) / 2);
+                    const pixelScale = 8;
+                    const offsetX = Math.floor((canvas.width / pixelScale - 16) / 2);
+                    const offsetY = Math.floor((canvas.height / pixelScale - 20) / 2);
                     
                     for (let y = 0; y < pixelData.length; y++) {
                         for (let x = 0; x < pixelData[y].length; x++) {
                             const color = pixelData[y][x];
                             if (color !== 'transparent') {
                                 ctx.fillStyle = color;
-                                ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                                ctx.fillRect((x + offsetX) * pixelScale, (y + offsetY) * pixelScale, pixelScale, pixelScale);
                             }
                         }
                     }
                     
-                    // Draw ground - FIXED position
                     const groundY = 224;
                     ctx.fillStyle = '#8B7355';
                     ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                    // Grass on top of ground
                     ctx.fillStyle = '#7CB342';
-                    ctx.fillRect(0, groundY, canvas.width, scale * 2);
-                    
+                    ctx.fillRect(0, groundY, canvas.width, 16);
                     return;
                 }
                 
-                // Otherwise use the template-based rendering
-                // Calculate centering offset
-                const birdWidth = 16; // pixels wide
-                const birdHeight = birdModel === 'chicken' ? 14 : 20; // chickens are shorter
-                const offsetX = Math.floor((canvas.width / scale - birdWidth) / 2);
-                const offsetY = Math.floor((canvas.height / scale - birdHeight) / 2);
+                const centerX = Math.floor(canvas.width / 2);
+                const startY = 80;
                 
-                // Helper function to draw a pixel (with centering offset)
-                const drawPixel = (x, y, color) => {
+                // Helper to draw a pixel
+                const px = (x, y, color) => {
                     ctx.fillStyle = color;
-                    ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                    ctx.fillRect(centerX + x * scale, startY + y * scale, scale, scale);
                 };
-
-                // Helper to darken color for shading
-                const darken = (color, percent) => {
-                    const num = parseInt(color.replace("#",""), 16);
-                    const amt = Math.round(2.55 * percent);
-                    const R = (num >> 16) - amt;
-                    const G = (num >> 8 & 0x00FF) - amt;
-                    const B = (num & 0x0000FF) - amt;
-                    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
-                        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
-                        .toString(16).slice(1);
-                };
-
-                const bodyDark = darken(bodyColor, 20);
-                const wingDark = darken(wingColor, 20);
 
                 if (birdModel === 'parrot') {
-                    // Draw Minecraft Parrot (simplified pixel art)
-                    // Head
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 2; y <= 5; y++) {
-                            drawPixel(x, y, bodyColor);
+                    // Parrot front view with proper eye spacing
+                    // Head (4 wide x 3 tall) with shading
+                    px(-2, 0, bodyLight);
+                    px(-1, 0, bodyLight);
+                    px(0, 0, bodyColor);
+                    px(1, 0, bodyColor);
+                    
+                    px(-2, 1, bodyColor);
+                    px(-1, 1, bodyColor);
+                    px(0, 1, bodyColor);
+                    px(1, 1, bodyDark);
+                    
+                    px(-2, 2, bodyColor);
+                    px(-1, 2, bodyColor);
+                    px(0, 2, bodyDark);
+                    px(1, 2, bodyDark);
+                    
+                    // Eyes - properly spaced on sides (not center!)
+                    px(-2, 1, '#000000');  // Left eye
+                    px(1, 1, '#000000');   // Right eye
+                    
+                    // Beak (centered, 2 pixels)
+                    px(-1, 3, '#f59e0b');
+                    px(0, 3, '#f59e0b');
+                    
+                    // Body (4 wide x 6 tall) with shading
+                    for(let x = -2; x <= 1; x++) {
+                        for(let y = 4; y <= 9; y++) {
+                            if (x <= -1) {
+                                px(x, y, y < 7 ? bodyColor : bodyDark);
+                            } else {
+                                px(x, y, y < 7 ? bodyDark : darken(bodyColor, 25));
+                            }
                         }
                     }
-                    // Head dark shade
-                    drawPixel(9, 3, bodyDark);
-                    drawPixel(9, 4, bodyDark);
                     
-                    // Beak
-                    drawPixel(10, 4, '#f59e0b');
-                    drawPixel(11, 4, '#f59e0b');
-                    
-                    // Eyes
-                    drawPixel(7, 3, '#ffffff');
-                    drawPixel(9, 3, '#ffffff');
-                    drawPixel(7, 3, '#000000'); // pupil
-                    
-                    // Body/Torso
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 6; y <= 12; y++) {
-                            drawPixel(x, y, bodyColor);
-                        }
-                    }
-                    // Body shading
-                    for(let y = 6; y <= 12; y++) {
-                        drawPixel(9, y, bodyDark);
+                    // Wings (visible on sides) with shading
+                    for(let y = 5; y <= 8; y++) {
+                        px(-3, y, y < 7 ? wingLight : wingDark);
+                        px(2, y, y < 7 ? wingColor : wingDark);
                     }
                     
-                    // Left Wing
-                    for(let x = 4; x <= 5; x++) {
-                        for(let y = 7; y <= 11; y++) {
-                            drawPixel(x, y, wingColor);
-                        }
-                    }
-                    drawPixel(5, 8, wingDark);
-                    drawPixel(5, 9, wingDark);
-                    drawPixel(5, 10, wingDark);
-                    
-                    // Right Wing  
-                    for(let x = 10; x <= 11; x++) {
-                        for(let y = 7; y <= 11; y++) {
-                            drawPixel(x, y, wingColor);
-                        }
-                    }
-                    drawPixel(10, 8, wingDark);
-                    drawPixel(10, 9, wingDark);
-                    drawPixel(10, 10, wingDark);
-                    
-                    // Tail
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 13; y <= 17; y++) {
-                            drawPixel(x, y, wingColor);
-                        }
-                    }
-                    // Tail shading
-                    drawPixel(9, 14, wingDark);
-                    drawPixel(9, 15, wingDark);
-                    drawPixel(9, 16, wingDark);
+                    // Tail bottom with shading
+                    px(-1, 10, wingColor);
+                    px(0, 10, wingColor);
+                    px(-1, 11, wingDark);
+                    px(0, 11, wingDark);
                     
                 } else {
-                    // Draw Minecraft Chicken - Accurate proportions matching actual game
-                    // Red Comb on top of small head
-                    drawPixel(7, 0, '#dc2626');
-                    drawPixel(8, 0, '#dc2626');
+                    // Minecraft Chicken - front view pixel perfect with shading
                     
-                    // Small Head - chickens have TINY heads compared to body
-                    for(let x = 7; x <= 8; x++) {
-                        for(let y = 1; y <= 2; y++) {
-                            drawPixel(x, y, bodyColor);
-                        }
+                    // Row 0: Comb (red, 2 pixels centered) with highlight
+                    px(-1, 0, lighten('#dc2626', 20));
+                    px(0, 0, '#dc2626');
+                    
+                    // Row 1: Head top (4 pixels wide) with shading
+                    px(-2, 1, bodyLight);
+                    px(-1, 1, bodyLight);
+                    px(0, 1, bodyColor);
+                    px(1, 1, bodyColor);
+                    
+                    // Row 2: Head with eyes (black, 1 pixel each at edges)
+                    px(-2, 2, '#000000');
+                    px(-1, 2, bodyColor);
+                    px(0, 2, bodyColor);
+                    px(1, 2, '#000000');
+                    
+                    // Row 3: Beak (tan/brown, 4 pixels wide - same as head) with shading
+                    px(-2, 3, '#c9984a');
+                    px(-1, 3, '#c9984a');
+                    px(0, 3, darken('#c9984a', 15));
+                    px(1, 3, darken('#c9984a', 15));
+                    
+                    // Row 4: Wattle (red, 2 pixels centered)
+                    px(-1, 4, '#dc2626');
+                    px(0, 4, darken('#dc2626', 20));
+                    
+                    // Rows 5-9: Body (6 pixels wide x 5 tall) with shading
+                    for(let y = 5; y <= 9; y++) {
+                        // Left side lighter
+                        px(-3, y, y < 7 ? bodyLight : bodyColor);
+                        px(-2, y, y < 7 ? bodyColor : bodyDark);
+                        px(-1, y, bodyColor);
+                        // Right side darker
+                        px(0, y, bodyColor);
+                        px(1, y, y < 7 ? bodyDark : darken(bodyColor, 25));
+                        px(2, y, bodyDark);
                     }
-                    drawPixel(8, 2, bodyDark); // slight shading
                     
-                    // Yellow Beak - small, pointing forward
-                    drawPixel(9, 2, '#fbbf24');
-                    
-                    // Red Wattle under head
-                    drawPixel(7, 3, '#dc2626');
-                    drawPixel(8, 3, '#dc2626');
-                    
-                    // Eyes - simple black dots
-                    drawPixel(7, 1, '#000000');
-                    drawPixel(8, 1, '#000000');
-                    
-                    // LARGE Body - main feature, chickens are mostly body!
-                    for(let x = 4; x <= 11; x++) {
-                        for(let y = 4; y <= 9; y++) {
-                            drawPixel(x, y, bodyColor);
-                        }
-                    }
-                    // Body shading on right
-                    for(let y = 4; y <= 9; y++) {
-                        drawPixel(11, y, bodyDark);
-                    }
-                    // Bottom shading
-                    for(let x = 4; x <= 10; x++) {
-                        drawPixel(x, 9, bodyDark);
+                    // Wings on sides (lighter/wing color) with shading
+                    for(let y = 6; y <= 8; y++) {
+                        px(-4, y, y === 6 ? wingLight : wingColor);
+                        px(3, y, y === 6 ? wingColor : wingDark);
                     }
                     
-                    // Small Wings - folded against body
-                    for(let x = 2; x <= 3; x++) {
-                        for(let y = 5; y <= 8; y++) {
-                            drawPixel(x, y, wingColor);
-                        }
-                    }
-                    drawPixel(3, 6, wingDark);
-                    drawPixel(3, 7, wingDark);
+                    // Row 10: Body continues between legs with shading
+                    px(-2, 10, bodyDark);
+                    px(-1, 10, bodyDark);
+                    px(0, 10, bodyDark);
+                    px(1, 10, bodyDark);
                     
-                    for(let x = 12; x <= 13; x++) {
-                        for(let y = 5; y <= 8; y++) {
-                            drawPixel(x, y, wingColor);
-                        }
+                    // Legs (yellow, 1 pixel wide each) with shading
+                    for(let y = 11; y <= 13; y++) {
+                        px(-2, y, y === 11 ? lighten('#f4d03f', 20) : '#f4d03f');
+                        px(1, y, y === 11 ? lighten('#f4d03f', 20) : '#f4d03f');
                     }
-                    drawPixel(12, 6, wingDark);
-                    drawPixel(12, 7, wingDark);
                     
-                    // Tiny tail at back
-                    drawPixel(4, 10, wingColor);
-                    drawPixel(5, 10, wingColor);
-                    
-                    // Yellow Legs - thin, short
-                    for(let x = 6; x <= 9; x++) {
-                        drawPixel(x, 10, '#fbbf24');
-                        drawPixel(x, 11, '#fbbf24');
-                        drawPixel(x, 12, '#fbbf24');
-                    }
+                    // Feet (wider at bottom) with darker shade
+                    const footColor = darken('#f4d03f', 15);
+                    px(-3, 14, footColor);
+                    px(-2, 14, footColor);
+                    px(-1, 14, footColor);
+                    px(0, 14, footColor);
+                    px(1, 14, footColor);
+                    px(2, 14, footColor);
                 }
                 
-                // Draw ground - FIXED position (doesn't move between models)
-                const groundY = 224; // Fixed Y position in pixels
-                ctx.fillStyle = '#8B7355'; // Brown dirt
+                // Ground - fixed position
+                const groundY = startY + 15 * scale + 10;
+                ctx.fillStyle = '#8B7355';
                 ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                
-                // Grass on top of dirt
-                ctx.fillStyle = '#7CB342'; // Green grass
-                ctx.fillRect(0, groundY, canvas.width, scale * 2);
+                ctx.fillStyle = '#7CB342';
+                ctx.fillRect(0, groundY, canvas.width, 16);
                 
             }, [birdModel, bodyColor, wingColor, pixelData]);
 
@@ -1454,16 +1467,166 @@
             };
 
 
-            const colors = [
-                { name: "Blue", value: "#3b82f6" },
-                { name: "Red", value: "#ef4444" },
-                { name: "Green", value: "#10b981" },
-                { name: "Yellow", value: "#fbbf24" },
-                { name: "Purple", value: "#8b5cf6" },
-                { name: "Pink", value: "#ec4899" },
-                { name: "Orange", value: "#f97316" },
-                { name: "Teal", value: "#14b8a6" }
-            ];
+            const [colorPalette, setColorPalette] = useState('bright');
+
+            const colorPalettes = {
+                bright: {
+                    name: "Bright",
+                    icon: "🌈",
+                    colors: [
+                        { name: "Blue", value: "#3b82f6" },
+                        { name: "Red", value: "#ef4444" },
+                        { name: "Green", value: "#10b981" },
+                        { name: "Yellow", value: "#fbbf24" },
+                        { name: "Purple", value: "#8b5cf6" },
+                        { name: "Pink", value: "#ec4899" },
+                        { name: "Orange", value: "#f97316" },
+                        { name: "Teal", value: "#14b8a6" }
+                    ]
+                },
+                forest: {
+                    name: "Forest",
+                    icon: "🌲",
+                    colors: [
+                        { name: "Dark Green", value: "#1e5128" },
+                        { name: "Forest Green", value: "#2d6a4f" },
+                        { name: "Moss Green", value: "#40916c" },
+                        { name: "Leaf Green", value: "#52b788" },
+                        { name: "Brown", value: "#6b4423" },
+                        { name: "Dark Brown", value: "#3d2817" },
+                        { name: "Bark Gray", value: "#5a5353" },
+                        { name: "Light Green", value: "#74c69d" }
+                    ]
+                },
+                jungle: {
+                    name: "Jungle",
+                    icon: "🌴",
+                    colors: [
+                        { name: "Jungle Green", value: "#2d6a4f" },
+                        { name: "Lime", value: "#95d5b2" },
+                        { name: "Bright Green", value: "#52b788" },
+                        { name: "Yellow Green", value: "#b7e4c7" },
+                        { name: "Tropical Brown", value: "#8b5a3c" },
+                        { name: "Leaf Green", value: "#40916c" },
+                        { name: "Parrot Green", value: "#1b4332" },
+                        { name: "Vine Green", value: "#d8f3dc" }
+                    ]
+                },
+                plains: {
+                    name: "Plains",
+                    icon: "🌾",
+                    colors: [
+                        { name: "Wheat Gold", value: "#daa520" },
+                        { name: "Grass Green", value: "#7cb342" },
+                        { name: "Sky Blue", value: "#87ceeb" },
+                        { name: "Straw Yellow", value: "#f4e4c1" },
+                        { name: "Earth Brown", value: "#8b7355" },
+                        { name: "Hay Yellow", value: "#e6c79c" },
+                        { name: "Field Green", value: "#9caf88" },
+                        { name: "Tan", value: "#d4a574" }
+                    ]
+                },
+                desert: {
+                    name: "Desert",
+                    icon: "🏜️",
+                    colors: [
+                        { name: "Sand", value: "#edc9af" },
+                        { name: "Desert Tan", value: "#d4a574" },
+                        { name: "Terracotta", value: "#c65d3b" },
+                        { name: "Red Sand", value: "#a0522d" },
+                        { name: "Cactus Green", value: "#6b8e23" },
+                        { name: "Orange Clay", value: "#e07a5f" },
+                        { name: "Light Sand", value: "#f4e4c1" },
+                        { name: "Dark Clay", value: "#8b4513" }
+                    ]
+                },
+                mountains: {
+                    name: "Mountains",
+                    icon: "⛰️",
+                    colors: [
+                        { name: "Stone Gray", value: "#708090" },
+                        { name: "Dark Stone", value: "#4a5568" },
+                        { name: "Snow White", value: "#f0f8ff" },
+                        { name: "Cloud Gray", value: "#b0c4de" },
+                        { name: "Rock Brown", value: "#8b7d6b" },
+                        { name: "Slate Blue", value: "#6a7f9e" },
+                        { name: "Ice Blue", value: "#e0f2f7" },
+                        { name: "Granite Gray", value: "#989898" }
+                    ]
+                },
+                taiga: {
+                    name: "Taiga",
+                    icon: "🌲❄️",
+                    colors: [
+                        { name: "Spruce Green", value: "#2d5016" },
+                        { name: "Pine Green", value: "#1e4620" },
+                        { name: "Snow White", value: "#fffafa" },
+                        { name: "Ice Blue", value: "#c7d3d4" },
+                        { name: "Dark Spruce", value: "#1a3a1a" },
+                        { name: "Gray Green", value: "#5f7161" },
+                        { name: "Frost White", value: "#e8f4f8" },
+                        { name: "Stone Gray", value: "#8b8589" }
+                    ]
+                },
+                swamp: {
+                    name: "Swamp",
+                    icon: "🐸",
+                    colors: [
+                        { name: "Murky Green", value: "#3d5a4c" },
+                        { name: "Swamp Brown", value: "#5c4033" },
+                        { name: "Moss Green", value: "#4a6741" },
+                        { name: "Lily Pad Green", value: "#6b8f71" },
+                        { name: "Dark Water", value: "#2d3e3f" },
+                        { name: "Mud Brown", value: "#4b3621" },
+                        { name: "Reed Green", value: "#7f9172" },
+                        { name: "Algae Green", value: "#556b2f" }
+                    ]
+                },
+                ocean: {
+                    name: "Ocean",
+                    icon: "🌊",
+                    colors: [
+                        { name: "Ocean Blue", value: "#006994" },
+                        { name: "Deep Blue", value: "#003d5c" },
+                        { name: "Cyan", value: "#00bcd4" },
+                        { name: "Aqua", value: "#4dd0e1" },
+                        { name: "Sea Green", value: "#20b2aa" },
+                        { name: "Coral Blue", value: "#5f9ea0" },
+                        { name: "Wave Blue", value: "#87ceeb" },
+                        { name: "Tropical Blue", value: "#40e0d0" }
+                    ]
+                },
+                nether: {
+                    name: "Nether",
+                    icon: "🔥",
+                    colors: [
+                        { name: "Netherrack Red", value: "#8b0000" },
+                        { name: "Lava Orange", value: "#ff4500" },
+                        { name: "Crimson Red", value: "#dc143c" },
+                        { name: "Soul Fire Blue", value: "#00ffff" },
+                        { name: "Blackstone", value: "#2f2f2f" },
+                        { name: "Magma Orange", value: "#ff6347" },
+                        { name: "Warped Teal", value: "#008b8b" },
+                        { name: "Glowstone Yellow", value: "#ffd700" }
+                    ]
+                },
+                end: {
+                    name: "The End",
+                    icon: "🌌",
+                    colors: [
+                        { name: "End Stone", value: "#ffffcc" },
+                        { name: "Void Black", value: "#000000" },
+                        { name: "Purple", value: "#800080" },
+                        { name: "Magenta", value: "#ff00ff" },
+                        { name: "Dark Purple", value: "#4b0082" },
+                        { name: "Chorus Purple", value: "#9370db" },
+                        { name: "Obsidian Black", value: "#0f0f0f" },
+                        { name: "Ender Purple", value: "#8a2be2" }
+                    ]
+                }
+            };
+
+            const colors = colorPalettes[colorPalette].colors;
 
             const generateUUID = () => {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -1488,7 +1651,7 @@
                         "component_groups": {},
                         "components": {
                             "minecraft:type_family": {
-                                "family": ["bird", "mob"]
+                                "family": birdModel === "chicken" ? ["chicken", "mob"] : ["parrot", "bird", "mob"]
                             },
                             "minecraft:health": {
                                 "value": health,
@@ -1497,17 +1660,6 @@
                             "minecraft:collision_box": {
                                 "width": size * 0.1,
                                 "height": size * 0.1
-                            },
-                            "minecraft:movement": {
-                                "value": speed * 0.05
-                            },
-                            "minecraft:navigation.fly": {
-                                "can_path_over_water": true,
-                                "can_path_from_air": true
-                            },
-                            "minecraft:movement.fly": {},
-                            "minecraft:physics": {
-                                "has_gravity": false
                             },
                             "minecraft:pushable": {
                                 "is_pushable": true,
@@ -1519,31 +1671,116 @@
                             "minecraft:behavior.panic": {
                                 "priority": 1,
                                 "speed_multiplier": 1.25
-                            },
-                            "minecraft:behavior.random_fly": {
-                                "priority": 2,
-                                "speed_multiplier": 1.0
-                            },
-                            "minecraft:behavior.look_at_player": {
-                                "priority": 3,
-                                "look_distance": 6.0,
-                                "probability": 0.02
-                            },
-                            "minecraft:behavior.random_look_around": {
-                                "priority": 4
                             }
                         },
                         "events": {}
                     }
                 };
 
-                // Add model-specific behaviors
+                // CHICKEN-SPECIFIC BEHAVIORS
                 if (birdModel === "chicken") {
-                    entity["minecraft:entity"].components["minecraft:behavior.lay_egg"] = {
-                        "priority": 2
-                    };
+                    Object.assign(entity["minecraft:entity"].components, {
+                        // Chickens walk on ground
+                        "minecraft:movement": {
+                            "value": speed * 0.05
+                        },
+                        "minecraft:navigation.walk": {
+                            "can_path_over_water": true,
+                            "avoid_water": true,
+                            "avoid_damage_blocks": true
+                        },
+                        "minecraft:movement.basic": {},
+                        "minecraft:physics": {
+                            "has_gravity": true
+                        },
+                        // Slow falling with wing flap
+                        "minecraft:buoyant": {
+                            "base_buoyancy": 1.0,
+                            "apply_gravity": true,
+                            "simulate_waves": false,
+                            "big_wave_probability": 0.0,
+                            "big_wave_speed": 0.0,
+                            "drag_down_on_buoyancy_removed": 0.0,
+                            "liquid_blocks": []
+                        },
+                        // Lay eggs
+                        "minecraft:behavior.lay_egg": {
+                            "priority": 2
+                        },
+                        // Breeding with seeds
+                        "minecraft:breedable": {
+                            "require_tame": false,
+                            "breed_items": ["wheat_seeds", "beetroot_seeds", "melon_seeds", "pumpkin_seeds"],
+                            "breeds_with": {
+                                "mate_type": identifier,
+                                "baby_type": identifier
+                            }
+                        },
+                        // Follow player holding seeds
+                        "minecraft:behavior.tempt": {
+                            "priority": 3,
+                            "speed_multiplier": 1.0,
+                            "items": ["wheat_seeds", "beetroot_seeds", "melon_seeds", "pumpkin_seeds"]
+                        },
+                        // Random stroll on ground
+                        "minecraft:behavior.random_stroll": {
+                            "priority": 5,
+                            "speed_multiplier": 1.0
+                        },
+                        "minecraft:behavior.look_at_player": {
+                            "priority": 6,
+                            "look_distance": 6.0,
+                            "probability": 0.02
+                        },
+                        "minecraft:behavior.random_look_around": {
+                            "priority": 7
+                        },
+                        // Leashable
+                        "minecraft:leashable": {
+                            "soft_distance": 4.0,
+                            "hard_distance": 6.0,
+                            "max_distance": 10.0
+                        }
+                    });
+                } 
+                // PARROT-SPECIFIC BEHAVIORS
+                else {
+                    Object.assign(entity["minecraft:entity"].components, {
+                        // Parrots fly
+                        "minecraft:movement": {
+                            "value": speed * 0.05
+                        },
+                        "minecraft:navigation.fly": {
+                            "can_path_over_water": true,
+                            "can_path_from_air": true
+                        },
+                        "minecraft:movement.fly": {},
+                        "minecraft:physics": {
+                            "has_gravity": false
+                        },
+                        // Random flying
+                        "minecraft:behavior.random_fly": {
+                            "priority": 2,
+                            "speed_multiplier": 1.0
+                        },
+                        // Follow player with seeds
+                        "minecraft:behavior.tempt": {
+                            "priority": 3,
+                            "speed_multiplier": 1.0,
+                            "items": ["wheat_seeds", "beetroot_seeds", "melon_seeds", "pumpkin_seeds"]
+                        },
+                        "minecraft:behavior.look_at_player": {
+                            "priority": 4,
+                            "look_distance": 6.0,
+                            "probability": 0.02
+                        },
+                        "minecraft:behavior.random_look_around": {
+                            "priority": 5
+                        }
+                    });
                 }
 
+                // Add friendly/aggressive behavior
                 if (behavior === "friendly") {
                     entity["minecraft:entity"].components["minecraft:tameable"] = {
                         "probability": 0.33,
@@ -1551,6 +1788,30 @@
                         "tame_event": {
                             "event": "minecraft:on_tame"
                         }
+                    };
+                } else if (behavior === "aggressive") {
+                    entity["minecraft:entity"].components["minecraft:attack"] = {
+                        "damage": 3
+                    };
+                    entity["minecraft:entity"].components["minecraft:behavior.melee_attack"] = {
+                        "priority": 2,
+                        "speed_multiplier": 1.2,
+                        "track_target": true
+                    };
+                    entity["minecraft:entity"].components["minecraft:behavior.nearest_attackable_target"] = {
+                        "priority": 2,
+                        "must_see": true,
+                        "reselect_targets": true,
+                        "entity_types": [
+                            {
+                                "filters": {
+                                    "test": "is_family",
+                                    "subject": "other",
+                                    "value": "player"
+                                },
+                                "max_dist": 16
+                            }
+                        ]
                     };
                 }
 
@@ -1641,6 +1902,26 @@
                             "geometry": {
                                 "default": geometryName
                             },
+                            "animations": birdModel === "chicken" ? {
+                                "walk": "animation.chicken.walk",
+                                "look_at_target": "animation.common.look_at_target",
+                                "baby_transform": "animation.chicken.baby_transform"
+                            } : {
+                                "flying": "animation.parrot.flying",
+                                "look_at_target": "animation.common.look_at_target",
+                                "baby_transform": "animation.parrot.baby_transform"
+                            },
+                            "scripts": {
+                                "animate": birdModel === "chicken" ? [
+                                    "walk",
+                                    "look_at_target",
+                                    { "baby_transform": "query.is_baby" }
+                                ] : [
+                                    "flying",
+                                    "look_at_target",
+                                    { "baby_transform": "query.is_baby" }
+                                ]
+                            },
                             "render_controllers": [renderController],
                             "spawn_egg": {
                                 "base_color": bodyColor,
@@ -1656,19 +1937,33 @@
             const generateTexture = () => {
                 const canvas = document.createElement('canvas');
                 
+                // Helper functions for color manipulation
+                const darken = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = Math.max(0, (num >> 16) - amt);
+                    const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+                    const B = Math.max(0, (num & 0x0000FF) - amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+                };
+                
+                const lighten = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = Math.min(255, (num >> 16) + amt);
+                    const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+                    const B = Math.min(255, (num & 0x0000FF) + amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+                };
+                
                 // If using advanced editor, create texture from pixel data
                 if (pixelData && pixelData.some(row => row.some(pixel => pixel !== 'transparent'))) {
-                    canvas.width = 64; // Standard Minecraft texture width
-                    canvas.height = 64; // Standard Minecraft texture height
+                    canvas.width = 64;
+                    canvas.height = 64;
                     const ctx = canvas.getContext('2d');
-                    
-                    // Fill with transparency
                     ctx.clearRect(0, 0, 64, 64);
                     
-                    // Minecraft chicken/parrot textures are laid out in a specific UV map format
-                    // We'll use a simplified approach: draw the custom pixels in the main body area
-                    const scale = 2; // Scale up the 16x20 design to fit better
-                    
+                    const scale = 2;
                     for (let y = 0; y < pixelData.length && y * scale < 64; y++) {
                         for (let x = 0; x < pixelData[y].length && x * scale < 64; x++) {
                             const color = pixelData[y][x];
@@ -1682,24 +1977,196 @@
                     return canvas.toDataURL('image/png');
                 }
                 
-                // Otherwise, use basic color-based texture
-                canvas.width = 32;
-                canvas.height = 32;
-                const ctx = canvas.getContext('2d');
-
-                // Fill with body color
-                ctx.fillStyle = bodyColor;
-                ctx.fillRect(0, 0, 32, 32);
-
-                // Add wing color accent
-                ctx.fillStyle = wingColor;
-                ctx.fillRect(0, 8, 8, 8);
-                ctx.fillRect(24, 8, 8, 8);
-
-                // Add some detail
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(10, 4, 2, 2);
-                ctx.fillRect(20, 4, 2, 2);
+                // Create shaded color variations
+                const bodyLight = lighten(bodyColor, 15);
+                const bodyDark = darken(bodyColor, 15);
+                const bodyDarker = darken(bodyColor, 30);
+                
+                const wingLight = lighten(wingColor, 15);
+                const wingDark = darken(wingColor, 15);
+                const wingDarker = darken(wingColor, 30);
+                
+                // Create proper UV-mapped texture
+                if (birdModel === 'chicken') {
+                    // Chicken UV map is 64x32
+                    canvas.width = 64;
+                    canvas.height = 32;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 64, 32);
+                    
+                    // HEAD UV mapping (0-48, 0-8)
+                    // Top of head (0, 0)
+                    ctx.fillStyle = bodyLight;
+                    ctx.fillRect(0, 0, 8, 8);
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(6, 0, 2, 8); // Right edge darker
+                    
+                    // Bottom of head (8, 0)
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(8, 0, 8, 8);
+                    
+                    // Right side (16, 0)
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(16, 0, 8, 8);
+                    
+                    // Front face (24, 0)
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(24, 0, 8, 8);
+                    // Eyes - black
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(26, 2, 2, 2); // Left eye
+                    ctx.fillRect(30, 2, 2, 2); // Right eye
+                    // Beak - tan with shading
+                    ctx.fillStyle = '#c9984a';
+                    ctx.fillRect(27, 4, 2, 2);
+                    ctx.fillRect(29, 4, 2, 2);
+                    ctx.fillStyle = darken('#c9984a', 20);
+                    ctx.fillRect(28, 5, 1, 1);
+                    ctx.fillRect(30, 5, 1, 1);
+                    // Wattle - red with shading
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(27, 6, 2, 1);
+                    ctx.fillRect(29, 6, 2, 1);
+                    ctx.fillStyle = darken('#dc2626', 25);
+                    ctx.fillRect(28, 6, 1, 1);
+                    
+                    // Left side (32, 0)
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(32, 0, 8, 8);
+                    
+                    // Back (40, 0)
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(40, 0, 8, 8);
+                    
+                    // COMB on top - red with shading
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(2, 1, 4, 2);
+                    ctx.fillStyle = lighten('#dc2626', 20);
+                    ctx.fillRect(2, 1, 2, 1);
+                    ctx.fillStyle = darken('#dc2626', 20);
+                    ctx.fillRect(4, 2, 2, 1);
+                    
+                    // BODY (0, 9) - with multi-tone shading
+                    // Top
+                    ctx.fillStyle = bodyLight;
+                    ctx.fillRect(0, 9, 12, 4);
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(10, 9, 2, 4);
+                    
+                    // Bottom
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(12, 9, 12, 4);
+                    
+                    // Front
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(24, 9, 12, 16);
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(34, 9, 2, 16); // Right edge
+                    ctx.fillRect(24, 23, 12, 2); // Bottom edge
+                    
+                    // Back
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(36, 9, 12, 16);
+                    
+                    // Right side
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(12, 13, 4, 16);
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(15, 13, 1, 16);
+                    
+                    // Left side
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(16, 13, 4, 16);
+                    
+                    // WINGS - use wing color with shading
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(48, 9, 8, 8);
+                    ctx.fillStyle = wingLight;
+                    ctx.fillRect(48, 9, 4, 4);
+                    ctx.fillStyle = wingDark;
+                    ctx.fillRect(52, 13, 4, 4);
+                    
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(56, 9, 8, 8);
+                    ctx.fillStyle = wingLight;
+                    ctx.fillRect(56, 9, 4, 4);
+                    ctx.fillStyle = wingDark;
+                    ctx.fillRect(60, 13, 4, 4);
+                    
+                    // LEGS - yellow with shading
+                    ctx.fillStyle = '#f4d03f';
+                    ctx.fillRect(0, 26, 3, 6);
+                    ctx.fillStyle = lighten('#f4d03f', 20);
+                    ctx.fillRect(0, 26, 2, 2);
+                    ctx.fillStyle = darken('#f4d03f', 20);
+                    ctx.fillRect(2, 30, 1, 2);
+                    
+                    ctx.fillStyle = '#f4d03f';
+                    ctx.fillRect(3, 26, 3, 6);
+                    ctx.fillStyle = lighten('#f4d03f', 20);
+                    ctx.fillRect(3, 26, 2, 2);
+                    ctx.fillStyle = darken('#f4d03f', 20);
+                    ctx.fillRect(5, 30, 1, 2);
+                    
+                } else {
+                    // Parrot UV map is 32x32
+                    canvas.width = 32;
+                    canvas.height = 32;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 32, 32);
+                    
+                    // HEAD - body color with shading
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(2, 2, 8, 8);
+                    ctx.fillStyle = bodyLight;
+                    ctx.fillRect(2, 2, 4, 4);
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(8, 6, 2, 4);
+                    
+                    // EYES - black
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(4, 4, 2, 2);
+                    ctx.fillRect(8, 4, 2, 2);
+                    
+                    // BEAK - orange with shading
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(5, 6, 4, 2);
+                    ctx.fillStyle = lighten('#f59e0b', 25);
+                    ctx.fillRect(5, 6, 2, 1);
+                    ctx.fillStyle = darken('#f59e0b', 25);
+                    ctx.fillRect(7, 7, 2, 1);
+                    
+                    // BODY - body color with shading
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(2, 10, 12, 12);
+                    ctx.fillStyle = bodyLight;
+                    ctx.fillRect(2, 10, 6, 6);
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(8, 16, 6, 6);
+                    
+                    // WINGS - wing color with shading
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(14, 10, 8, 10);
+                    ctx.fillStyle = wingLight;
+                    ctx.fillRect(14, 10, 4, 5);
+                    ctx.fillStyle = wingDark;
+                    ctx.fillRect(18, 15, 4, 5);
+                    
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(22, 10, 8, 10);
+                    ctx.fillStyle = wingLight;
+                    ctx.fillRect(22, 10, 4, 5);
+                    ctx.fillStyle = wingDark;
+                    ctx.fillRect(26, 15, 4, 5);
+                    
+                    // TAIL - wing color with shading
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(10, 22, 8, 8);
+                    ctx.fillStyle = wingLight;
+                    ctx.fillRect(10, 22, 4, 4);
+                    ctx.fillStyle = wingDark;
+                    ctx.fillRect(14, 26, 4, 4);
+                }
 
                 return canvas.toDataURL('image/png');
             };
@@ -1866,6 +2333,17 @@
                                     {ttsEnabled ? makeTextSpeakable(t.bodyColor) : t.bodyColor}
                                     <span className="speak-icon" onClick={() => speak(t.bodyColor)}>🔊</span>
                                 </label>
+                                <div className="palette-tabs">
+                                    {Object.keys(colorPalettes).map(paletteKey => (
+                                        <button
+                                            key={paletteKey}
+                                            className={`palette-tab ${colorPalette === paletteKey ? 'active' : ''}`}
+                                            onClick={() => setColorPalette(paletteKey)}
+                                        >
+                                            {colorPalettes[paletteKey].icon} {colorPalettes[paletteKey].name}
+                                        </button>
+                                    ))}
+                                </div>
                                 <div className="color-picker-container">
                                     {colors.map(color => (
                                         <div
