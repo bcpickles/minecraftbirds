@@ -1,3 +1,5 @@
+BETA BETA BETA BETA ... currently spawning some very funky birds. You've been warned.
+
 Minecraft Birds is a part of the Minecraft 4 All! project by Mary Phillips. All credit goes to Mary Phillips. https://www.linkedin.com/in/mary-phillips-829498236/
 
 Minecraft Birds was designed to align to UDL 3.0, especially in inclusion, accessibility, and joy. 
