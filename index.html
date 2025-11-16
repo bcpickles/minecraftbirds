@@ -730,8 +730,8 @@
                 birdName: "Bird Name:",
                 namePlaceholder: "Enter your bird's name",
                 birdModel: "Bird Model (Body Type):",
-                parrot: "Parrot (Tall & Colorful)",
-                chicken: "Chicken (Round & Fluffy)",
+                parrot: "Parrot",
+                chicken: "Chicken",
                 bodyColor: "Body Color:",
                 wingColor: "Wing Color:",
                 behavior: "Behavior:",
@@ -817,8 +817,8 @@
                 birdName: "Nombre del Pájaro:",
                 namePlaceholder: "Ingresa el nombre de tu pájaro",
                 birdModel: "Modelo de Pájaro (Tipo de Cuerpo):",
-                parrot: "Loro (Alto y Colorido)",
-                chicken: "Pollo (Redondo y Esponjoso)",
+                parrot: "Loro",
+                chicken: "Pollo",
                 bodyColor: "Color del Cuerpo:",
                 wingColor: "Color de las Alas:",
                 behavior: "Comportamiento:",
@@ -1101,132 +1101,153 @@
                 // Load the current basic design into advanced editor
                 const newData = Array(20).fill(null).map(() => Array(16).fill('transparent'));
                 
-                // Helper to darken color for shading
+                // Helper functions for shading
                 const darken = (color, percent) => {
                     const num = parseInt(color.replace("#",""), 16);
                     const amt = Math.round(2.55 * percent);
-                    const R = (num >> 16) - amt;
-                    const G = (num >> 8 & 0x00FF) - amt;
-                    const B = (num & 0x0000FF) - amt;
-                    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
-                        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
-                        .toString(16).slice(1);
+                    const R = Math.max(0, (num >> 16) - amt);
+                    const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+                    const B = Math.max(0, (num & 0x0000FF) - amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
                 };
 
-                const bodyDark = darken(bodyColor, 20);
-                const wingDark = darken(wingColor, 20);
+                const lighten = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = Math.min(255, (num >> 16) + amt);
+                    const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+                    const B = Math.min(255, (num & 0x0000FF) + amt);
+                    return "#" + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+                };
+
+                const bodyLight = lighten(bodyColor, 15);
+                const bodyDark = darken(bodyColor, 15);
+                const wingLight = lighten(wingColor, 15);
+                const wingDark = darken(wingColor, 15);
+                
+                // Helper to place pixel (maps from centered coordinates to array indices)
+                // centerX = 8 (middle of 16-pixel width), so x=-2 maps to index 6
+                const px = (x, y, color) => {
+                    const centerX = 8;
+                    newData[y][centerX + x] = color;
+                };
                 
                 if (birdModel === 'parrot') {
-                    // Copy parrot design
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 2; y <= 5; y++) {
-                            newData[y][x] = bodyColor;
+                    // Parrot front view - matches preview exactly
+                    // Head (4 wide x 3 tall) with shading
+                    px(-2, 0, bodyLight);
+                    px(-1, 0, bodyLight);
+                    px(0, 0, bodyColor);
+                    px(1, 0, bodyColor);
+                    
+                    px(-2, 1, bodyColor);
+                    px(-1, 1, bodyColor);
+                    px(0, 1, bodyColor);
+                    px(1, 1, bodyDark);
+                    
+                    px(-2, 2, bodyColor);
+                    px(-1, 2, bodyColor);
+                    px(0, 2, bodyDark);
+                    px(1, 2, bodyDark);
+                    
+                    // Eyes - properly spaced on sides
+                    px(-2, 1, '#000000');  // Left eye
+                    px(1, 1, '#000000');   // Right eye
+                    
+                    // Beak (centered, 2 pixels)
+                    px(-1, 3, '#f59e0b');
+                    px(0, 3, '#f59e0b');
+                    
+                    // Body (4 wide x 6 tall) with shading
+                    for(let x = -2; x <= 1; x++) {
+                        for(let y = 4; y <= 9; y++) {
+                            if (x <= -1) {
+                                px(x, y, y < 7 ? bodyColor : bodyDark);
+                            } else {
+                                px(x, y, y < 7 ? bodyDark : darken(bodyColor, 25));
+                            }
                         }
                     }
-                    newData[3][9] = bodyDark;
-                    newData[4][9] = bodyDark;
                     
-                    newData[4][10] = '#f59e0b';
-                    newData[4][11] = '#f59e0b';
-                    
-                    newData[3][7] = '#ffffff';
-                    newData[3][9] = '#ffffff';
-                    newData[3][7] = '#000000';
-                    
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 6; y <= 12; y++) {
-                            newData[y][x] = bodyColor;
-                        }
-                    }
-                    for(let y = 6; y <= 12; y++) {
-                        newData[y][9] = bodyDark;
+                    // Wings (visible on sides) with shading
+                    for(let y = 5; y <= 8; y++) {
+                        px(-3, y, y < 7 ? wingLight : wingDark);
+                        px(2, y, y < 7 ? wingColor : wingDark);
                     }
                     
-                    for(let x = 4; x <= 5; x++) {
-                        for(let y = 7; y <= 11; y++) {
-                            newData[y][x] = wingColor;
-                        }
-                    }
-                    newData[8][5] = wingDark;
-                    newData[9][5] = wingDark;
-                    newData[10][5] = wingDark;
+                    // Tail bottom with shading
+                    px(-1, 10, wingColor);
+                    px(0, 10, wingColor);
+                    px(-1, 11, wingDark);
+                    px(0, 11, wingDark);
                     
-                    for(let x = 10; x <= 11; x++) {
-                        for(let y = 7; y <= 11; y++) {
-                            newData[y][x] = wingColor;
-                        }
-                    }
-                    newData[8][10] = wingDark;
-                    newData[9][10] = wingDark;
-                    newData[10][10] = wingDark;
-                    
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 13; y <= 17; y++) {
-                            newData[y][x] = wingColor;
-                        }
-                    }
-                    newData[14][9] = wingDark;
-                    newData[15][9] = wingDark;
-                    newData[16][9] = wingDark;
                 } else {
-                    // Copy classic blocky Minecraft chicken design
-                    newData[0][7] = '#dc2626';
-                    newData[0][8] = '#dc2626';
+                    // Minecraft Chicken - front view pixel perfect with shading
                     
-                    for(let x = 6; x <= 9; x++) {
-                        for(let y = 1; y <= 3; y++) {
-                            newData[y][x] = bodyColor;
-                        }
+                    // Row 0: Comb (red, 2 pixels centered) with highlight
+                    px(-1, 0, lighten('#dc2626', 20));
+                    px(0, 0, '#dc2626');
+                    
+                    // Row 1: Head top (4 pixels wide) with shading
+                    px(-2, 1, bodyLight);
+                    px(-1, 1, bodyLight);
+                    px(0, 1, bodyColor);
+                    px(1, 1, bodyColor);
+                    
+                    // Row 2: Head with eyes (black, 1 pixel each at edges)
+                    px(-2, 2, '#000000');
+                    px(-1, 2, bodyColor);
+                    px(0, 2, bodyColor);
+                    px(1, 2, '#000000');
+                    
+                    // Row 3: Beak (tan/brown, 4 pixels wide) with shading
+                    px(-2, 3, '#c9984a');
+                    px(-1, 3, '#c9984a');
+                    px(0, 3, darken('#c9984a', 15));
+                    px(1, 3, darken('#c9984a', 15));
+                    
+                    // Row 4: Wattle (red, 2 pixels centered)
+                    px(-1, 4, '#dc2626');
+                    px(0, 4, darken('#dc2626', 20));
+                    
+                    // Rows 5-9: Body (6 pixels wide x 5 tall) with shading
+                    for(let y = 5; y <= 9; y++) {
+                        // Left side lighter
+                        px(-3, y, y < 7 ? bodyLight : bodyColor);
+                        px(-2, y, y < 7 ? bodyColor : bodyDark);
+                        px(-1, y, bodyColor);
+                        // Right side darker
+                        px(0, y, bodyColor);
+                        px(1, y, y < 7 ? bodyDark : darken(bodyColor, 25));
+                        px(2, y, bodyDark);
                     }
-                    newData[2][9] = bodyDark;
                     
-                    newData[2][10] = '#fbbf24';
-                    
-                    newData[4][7] = '#dc2626';
-                    
-                    newData[2][6] = '#000000';
-                    newData[2][9] = '#000000';
-                    
-                    for(let x = 7; x <= 8; x++) {
-                        newData[4][x] = bodyColor;
-                        newData[5][x] = bodyColor;
+                    // Wings on sides with shading
+                    for(let y = 6; y <= 8; y++) {
+                        px(-4, y, y === 6 ? wingLight : wingColor);
+                        px(3, y, y === 6 ? wingColor : wingDark);
                     }
                     
-                    for(let x = 4; x <= 11; x++) {
-                        for(let y = 6; y <= 10; y++) {
-                            newData[y][x] = bodyColor;
-                        }
-                    }
-                    for(let y = 6; y <= 10; y++) {
-                        newData[y][11] = bodyDark;
-                    }
-                    newData[10][10] = bodyDark;
+                    // Row 10: Body continues between legs with shading
+                    px(-2, 10, bodyDark);
+                    px(-1, 10, bodyDark);
+                    px(0, 10, bodyDark);
+                    px(1, 10, bodyDark);
                     
-                    for(let x = 2; x <= 3; x++) {
-                        for(let y = 7; y <= 9; y++) {
-                            newData[y][x] = wingColor;
-                        }
+                    // Legs (yellow, 1 pixel wide each) with shading
+                    for(let y = 11; y <= 13; y++) {
+                        px(-2, y, y === 11 ? lighten('#f4d03f', 20) : '#f4d03f');
+                        px(1, y, y === 11 ? lighten('#f4d03f', 20) : '#f4d03f');
                     }
-                    newData[8][3] = wingDark;
                     
-                    for(let x = 12; x <= 13; x++) {
-                        for(let y = 7; y <= 9; y++) {
-                            newData[y][x] = wingColor;
-                        }
-                    }
-                    newData[8][12] = wingDark;
-                    
-                    newData[11][4] = wingColor;
-                    newData[11][5] = wingColor;
-                    newData[12][4] = wingColor;
-                    newData[12][5] = wingColor;
-                    newData[13][5] = wingColor;
-                    newData[11][4] = wingDark;
-                    
-                    newData[11][6] = '#fbbf24';
-                    newData[11][7] = '#fbbf24';
-                    newData[11][8] = '#fbbf24';
-                    newData[11][9] = '#fbbf24';
+                    // Feet (wider at bottom) with darker shade
+                    const footColor = darken('#f4d03f', 15);
+                    px(-3, 14, footColor);
+                    px(-2, 14, footColor);
+                    px(-1, 14, footColor);
+                    px(0, 14, footColor);
+                    px(1, 14, footColor);
+                    px(2, 14, footColor);
                 }
                 
                 setPixelData(newData);
@@ -2447,26 +2468,6 @@
                                     />
                                     <div className="slider-value">
                                         {speed <= 3 ? t.slow : speed <= 7 ? t.medium : t.fast}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="control-group">
-                                <label className="control-label">
-                                    {t.size}
-                                    <span className="speak-icon" onClick={() => speak(t.size)}>🔊</span>
-                                </label>
-                                <div className="slider-container">
-                                    <input 
-                                        type="range" 
-                                        min="3" 
-                                        max="8" 
-                                        value={size}
-                                        onChange={(e) => setSize(parseInt(e.target.value))}
-                                        className="slider"
-                                    />
-                                    <div className="slider-value">
-                                        {size <= 4 ? t.small : size <= 6 ? t.medium : t.largeBird}
                                     </div>
                                 </div>
                             </div>
