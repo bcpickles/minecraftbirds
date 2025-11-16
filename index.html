@@ -1658,8 +1658,11 @@
                                 "max": health
                             },
                             "minecraft:collision_box": {
-                                "width": size * 0.1,
-                                "height": size * 0.1
+                                "width": birdModel === "chicken" ? size * 0.06 : size * 0.05,
+                                "height": birdModel === "chicken" ? size * 0.06 : size * 0.08
+                            },
+                            "minecraft:scale": {
+                                "value": size * 0.15
                             },
                             "minecraft:pushable": {
                                 "is_pushable": true,
@@ -2457,13 +2460,13 @@
                                     <input 
                                         type="range" 
                                         min="3" 
-                                        max="10" 
+                                        max="8" 
                                         value={size}
                                         onChange={(e) => setSize(parseInt(e.target.value))}
                                         className="slider"
                                     />
                                     <div className="slider-value">
-                                        {size <= 4 ? t.small : size <= 7 ? t.medium : t.largeBird}
+                                        {size <= 4 ? t.small : size <= 6 ? t.medium : t.largeBird}
                                     </div>
                                 </div>
                             </div>
