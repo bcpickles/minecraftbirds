@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Bird Creator 🐦</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .language-toggle {
+            display: flex;
+            background: white;
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .lang-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: #f7fafc;
+        }
+
+        .tts-toggle {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tts-toggle.active {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border-color: #38a169;
+        }
+
+        .tts-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .speak-icon {
+            cursor: pointer;
+            font-size: 1.3em;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+
+        .speak-icon:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+
+        .speak-icon:active {
+            transform: scale(0.95);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            border: 3px solid #e2e8f0;
+        }
+
+        .panel h2 {
+            color: #2d3748;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .color-picker-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #2d3748;
+            box-shadow: 0 0 0 3px #fff, 0 0 0 6px #4299e1;
+        }
+
+        .slider-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            outline: none;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #fc8181, #f6ad55, #68d391);
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #4299e1;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #4299e1;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 1.4em;
+            color: #2d3748;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .preview-box {
+            background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 100%);
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2d3748;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .zoom-btn:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+
+        .zoom-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .zoom-level {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #2d3748;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .minecraft-canvas {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            display: block;
+            transform-origin: center center;
+        }
+
+        .canvas-container {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            opacity: 0.3;
+            border-radius: 100px;
+            animation: float-cloud 20s linear infinite;
+        }
+
+        .cloud-1 {
+            width: 100px;
+            height: 40px;
+            top: 20%;
+            left: -100px;
+        }
+
+        .cloud-2 {
+            width: 80px;
+            height: 35px;
+            top: 60%;
+            left: -80px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float-cloud {
+            0% { left: -100px; }
+            100% { left: 120%; }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 40px;
+            font-size: 1.4em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: 'Fredoka', sans-serif;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            border: 3px solid #cbd5e0;
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .input-text:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: white;
+            border: 3px solid #cbd5e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2em;
+        }
+
+        .radio-option:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .radio-option.selected {
+            border-color: #4299e1;
+            background: #bee3f8;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .success-message {
+            background: #48bb78;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 20px;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .advanced-editor-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .advanced-editor-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .editor-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e2e8f0;
+        }
+
+        .editor-close {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .editor-close:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pixel-canvas {
+            border: 3px solid #2d3748;
+            cursor: crosshair;
+            image-rendering: pixelated;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .canvas-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tool-panel {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            border: 3px solid #e2e8f0;
+        }
+
+        .tool-section {
+            margin-bottom: 20px;
+        }
+
+        .tool-section h3 {
+            color: #2d3748;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .color-swatch {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .color-swatch.active {
+            border-color: #2d3748;
+            box-shadow: 0 0 0 3px #fff, 0 0 0 6px #4299e1;
+        }
+
+        .tool-btn {
+            padding: 10px 15px;
+            border: 2px solid #cbd5e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1em;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tool-btn:hover {
+            background: #f7fafc;
+            border-color: #4299e1;
+        }
+
+        .tool-btn.active {
+            background: #4299e1;
+            color: white;
+            border-color: #4299e1;
+        }
+
+        @media (max-width: 768px) {
+            .editor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-box {
+            background: #bee3f8;
+            border: 3px solid #4299e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #2c5282;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Translations
+        const translations = {
+            en: {
+                title: "Minecraft Bird Creator",
+                subtitle: "Design your own custom bird for Minecraft Education!",
+                howToUse: "How to use your bird:",
+                step1: "Design your bird using the controls below",
+                step2: "Click 'Download Bird for Minecraft!' button",
+                step3: "Open Minecraft Education → Settings → Storage → Import",
+                step4: "Select your .mcaddon file and create a new world!",
+                designBird: "Design Your Bird",
+                birdName: "Bird Name:",
+                namePlaceholder: "Enter your bird's name",
+                birdModel: "Bird Model (Body Type):",
+                parrot: "Parrot (Tall & Colorful)",
+                chicken: "Chicken (Round & Fluffy)",
+                bodyColor: "Body Color:",
+                wingColor: "Wing Color:",
+                behavior: "Behavior:",
+                friendly: "Friendly (Can be tamed!)",
+                neutral: "Neutral (Just flies around)",
+                attributes: "Bird Attributes",
+                health: "Health (Hearts ❤️):",
+                hearts: "hearts",
+                speed: "Flight Speed (How fast it flies):",
+                slow: "🐌 Slow",
+                medium: "🏃 Medium",
+                fast: "⚡ Fast",
+                size: "Size (How big it is):",
+                small: "🐦 Small",
+                largeBird: "🦅 Large",
+                preview: "Preview:",
+                spawnEggPreview: "Spawn Egg Preview:",
+                spawning: "Spawning & Habitat",
+                spawnMode: "How should your bird appear in the world?",
+                spawnEgg: "Spawn Egg (Creative Mode)",
+                spawnEggDesc: "Use a spawn egg from your inventory to create birds anywhere",
+                naturalSpawn: "Natural Spawn (Realistic)",
+                naturalSpawnDesc: "Birds appear naturally in their habitat, like real animals!",
+                habitat: "Where does your bird live?",
+                forest: "🌲 Forest (Trees & shade)",
+                jungle: "🌴 Jungle (Tropical & humid)",
+                plains: "🌾 Plains (Open grasslands)",
+                mountains: "⛰️ Mountains (High altitude)",
+                desert: "🏜️ Desert (Hot & dry)",
+                spawnRarity: "How common is your bird?",
+                veryRare: "⭐ Very Rare (Hard to find!)",
+                rare: "⭐⭐ Rare (Uncommon)",
+                common: "⭐⭐⭐ Common (Easy to find)",
+                veryCommon: "⭐⭐⭐⭐ Very Common (Everywhere!)",
+                groupSize: "Do they travel alone or in groups?",
+                alone: "Solo (1 bird at a time)",
+                pair: "Pair (2 birds together)",
+                smallGroup: "Small Flock (3-5 birds)",
+                largeGroup: "Large Flock (6-10 birds)",
+                timeOfDay: "When are they most active?",
+                anytime: "☀️🌙 Anytime (Day & Night)",
+                dayOnly: "☀️ Daytime Only",
+                nightOnly: "🌙 Nighttime Only",
+                dawnDusk: "🌅 Dawn & Dusk",
+                startOver: "Start Over",
+                download: "Download Bird for Minecraft!",
+                success: "Success! Your bird",
+                successMsg: "has been downloaded!",
+                importMsg: "Import it into Minecraft Education to see it fly!",
+                ttsOn: "🔊 Sound On",
+                ttsOff: "🔇 Sound Off",
+                advancedEditor: "🎨 Advanced Pixel Editor",
+                advancedEditorBtn: "Open Advanced Editor",
+                closeEditor: "Close",
+                paintTool: "🖌️ Paint",
+                eraseTool: "🧹 Erase",
+                fillTool: "🪣 Fill",
+                eyedropperTool: "💧 Eyedropper",
+                clearCanvas: "Clear All",
+                useTemplate: "Use Template",
+                currentColor: "Current Color:",
+                colorPalette: "Color Palette",
+                tools: "Tools",
+                canvasSize: "Canvas Size:",
+                gridToggle: "Show Grid",
+                uvMapGuide: "UV Map Guide",
+                frontView: "Front",
+                sideView: "Side",
+                topView: "Top",
+                backView: "Back",
+                textureInfo: "Paint on the canvas to customize your bird's texture. The canvas represents a flat layout that wraps around the 3D model.",
+                rotatePreview: "Rotate 3D Preview"
+            },
+            es: {
+                title: "Creador de Pájaros de Minecraft",
+                subtitle: "¡Diseña tu propio pájaro personalizado para Minecraft Education!",
+                howToUse: "Cómo usar tu pájaro:",
+                step1: "Diseña tu pájaro usando los controles a continuación",
+                step2: "Haz clic en el botón '¡Descargar Pájaro para Minecraft!'",
+                step3: "Abre Minecraft Education → Configuración → Almacenamiento → Importar",
+                step4: "¡Selecciona tu archivo .mcaddon y crea un mundo nuevo!",
+                designBird: "Diseña Tu Pájaro",
+                birdName: "Nombre del Pájaro:",
+                namePlaceholder: "Ingresa el nombre de tu pájaro",
+                birdModel: "Modelo de Pájaro (Tipo de Cuerpo):",
+                parrot: "Loro (Alto y Colorido)",
+                chicken: "Pollo (Redondo y Esponjoso)",
+                bodyColor: "Color del Cuerpo:",
+                wingColor: "Color de las Alas:",
+                behavior: "Comportamiento:",
+                friendly: "Amigable (¡Se puede domesticar!)",
+                neutral: "Neutral (Solo vuela alrededor)",
+                attributes: "Atributos del Pájaro",
+                health: "Salud (Corazones ❤️):",
+                hearts: "corazones",
+                speed: "Velocidad de Vuelo (Qué tan rápido vuela):",
+                slow: "🐌 Lento",
+                medium: "🏃 Medio",
+                fast: "⚡ Rápido",
+                size: "Tamaño (Qué tan grande es):",
+                small: "🐦 Pequeño",
+                largeBird: "🦅 Grande",
+                preview: "Vista Previa:",
+                spawnEggPreview: "Vista Previa del Huevo:",
+                spawning: "Aparición y Hábitat",
+                spawnMode: "¿Cómo debe aparecer tu pájaro en el mundo?",
+                spawnEgg: "Huevo de Aparición (Modo Creativo)",
+                spawnEggDesc: "Usa un huevo de aparición de tu inventario para crear pájaros en cualquier lugar",
+                naturalSpawn: "Aparición Natural (Realista)",
+                naturalSpawnDesc: "¡Los pájaros aparecen naturalmente en su hábitat, como animales reales!",
+                habitat: "¿Dónde vive tu pájaro?",
+                forest: "🌲 Bosque (Árboles y sombra)",
+                jungle: "🌴 Selva (Tropical y húmeda)",
+                plains: "🌾 Llanuras (Praderas abiertas)",
+                mountains: "⛰️ Montañas (Gran altitud)",
+                desert: "🏜️ Desierto (Caliente y seco)",
+                spawnRarity: "¿Qué tan común es tu pájaro?",
+                veryRare: "⭐ Muy Raro (¡Difícil de encontrar!)",
+                rare: "⭐⭐ Raro (Poco común)",
+                common: "⭐⭐⭐ Común (Fácil de encontrar)",
+                veryCommon: "⭐⭐⭐⭐ Muy Común (¡En todas partes!)",
+                groupSize: "¿Viajan solos o en grupos?",
+                alone: "Solo (1 pájaro a la vez)",
+                pair: "Pareja (2 pájaros juntos)",
+                smallGroup: "Bandada Pequeña (3-5 pájaros)",
+                largeGroup: "Bandada Grande (6-10 pájaros)",
+                timeOfDay: "¿Cuándo son más activos?",
+                anytime: "☀️🌙 Cualquier hora (Día y Noche)",
+                dayOnly: "☀️ Solo de Día",
+                nightOnly: "🌙 Solo de Noche",
+                dawnDusk: "🌅 Amanecer y Atardecer",
+                startOver: "Empezar de Nuevo",
+                download: "¡Descargar Pájaro para Minecraft!",
+                success: "¡Éxito! Tu pájaro",
+                successMsg: "ha sido descargado!",
+                importMsg: "¡Impórtalo a Minecraft Education para verlo volar!",
+                ttsOn: "🔊 Sonido Activado",
+                ttsOff: "🔇 Sonido Desactivado",
+                advancedEditor: "🎨 Editor de Píxeles Avanzado",
+                advancedEditorBtn: "Abrir Editor Avanzado",
+                closeEditor: "Cerrar",
+                paintTool: "🖌️ Pintar",
+                eraseTool: "🧹 Borrar",
+                fillTool: "🪣 Llenar",
+                eyedropperTool: "💧 Gotero",
+                clearCanvas: "Borrar Todo",
+                useTemplate: "Usar Plantilla",
+                currentColor: "Color Actual:",
+                colorPalette: "Paleta de Colores",
+                tools: "Herramientas",
+                canvasSize: "Tamaño del Lienzo:",
+                gridToggle: "Mostrar Cuadrícula",
+                uvMapGuide: "Guía de Mapa UV",
+                frontView: "Frente",
+                sideView: "Lado",
+                topView: "Arriba",
+                backView: "Atrás",
+                textureInfo: "Pinta en el lienzo para personalizar la textura de tu pájaro. El lienzo representa un diseño plano que se envuelve alrededor del modelo 3D.",
+                rotatePreview: "Rotar Vista Previa 3D"
+            }
+        };
+
+        function BirdEditor() {
+            const [birdName, setBirdName] = useState("My Awesome Bird");
+            const [bodyColor, setBodyColor] = useState("#3b82f6");
+            const [wingColor, setWingColor] = useState("#1e40af");
+            const [health, setHealth] = useState(10);
+            const [speed, setSpeed] = useState(5);
+            const [size, setSize] = useState(5);
+            const [behavior, setBehavior] = useState("friendly");
+            const [birdModel, setBirdModel] = useState("parrot");
+            const [downloadSuccess, setDownloadSuccess] = useState(false);
+            const [zoom, setZoom] = useState(1);
+            const [language, setLanguage] = useState('en');
+            const [ttsEnabled, setTtsEnabled] = useState(false);
+            
+            // Spawn configuration
+            const [spawnMode, setSpawnMode] = useState('egg'); // 'egg' or 'natural'
+            const [habitat, setHabitat] = useState('forest');
+            const [spawnRarity, setSpawnRarity] = useState('common');
+            const [groupSize, setGroupSize] = useState('alone');
+            const [timeOfDay, setTimeOfDay] = useState('anytime');
+            
+            // Advanced editor
+            const [showAdvancedEditor, setShowAdvancedEditor] = useState(false);
+            const [pixelData, setPixelData] = useState(null);
+            const [currentTool, setCurrentTool] = useState('paint');
+            const [currentColor, setCurrentColor] = useState('#3b82f6');
+            const [showGrid, setShowGrid] = useState(true);
+            const [previewRotation, setPreviewRotation] = useState(0); // 0=front, 1=side, 2=back, 3=other side
+            const advancedCanvasRef = useRef(null);
+            const preview3DRef = useRef(null);
+            
+            const canvasRef = useRef(null);
+
+            const t = translations[language];
+
+            const pixelColors = [
+                '#3b82f6', '#1e40af', '#ef4444', '#dc2626',
+                '#10b981', '#059669', '#fbbf24', '#f59e0b',
+                '#8b5cf6', '#7c3aed', '#ec4899', '#db2777',
+                '#14b8a6', '#0d9488', '#f97316', '#ea580c',
+                '#ffffff', '#e5e7eb', '#9ca3af', '#6b7280',
+                '#374151', '#1f2937', '#000000', 'transparent'
+            ];
+
+            // Initialize pixel data for advanced editor
+            useEffect(() => {
+                if (!pixelData) {
+                    const width = 16;
+                    const height = 20;
+                    const data = [];
+                    for (let y = 0; y < height; y++) {
+                        data[y] = [];
+                        for (let x = 0; x < width; x++) {
+                            data[y][x] = 'transparent';
+                        }
+                    }
+                    setPixelData(data);
+                }
+            }, [pixelData]);
+
+            // Draw 3D preview in advanced editor with rotation
+            useEffect(() => {
+                if (!showAdvancedEditor || !preview3DRef.current || !pixelData) return;
+
+                const canvas = preview3DRef.current;
+                const ctx = canvas.getContext('2d');
+                const scale = 8;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Simple pseudo-3D rendering based on rotation
+                if (previewRotation === 0) {
+                    // Front view - same as main preview
+                    const offsetX = Math.floor((canvas.width / scale - 16) / 2);
+                    const offsetY = Math.floor((canvas.height / scale - 20) / 2);
+
+                    for (let y = 0; y < pixelData.length && y < 20; y++) {
+                        for (let x = 0; x < pixelData[y].length && x < 16; x++) {
+                            const color = pixelData[y][x];
+                            if (color !== 'transparent') {
+                                ctx.fillStyle = color;
+                                ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                            }
+                        }
+                    }
+                } else if (previewRotation === 1) {
+                    // Side view - show compressed side profile
+                    const offsetX = Math.floor((canvas.width / scale - 8) / 2);
+                    const offsetY = Math.floor((canvas.height / scale - 20) / 2);
+
+                    // Sample from the sides of the texture
+                    for (let y = 0; y < pixelData.length && y < 20; y++) {
+                        // Left side pixels (compressed)
+                        const leftColor = pixelData[y][3] !== 'transparent' ? pixelData[y][3] : 
+                                         pixelData[y][4] !== 'transparent' ? pixelData[y][4] : 'transparent';
+                        if (leftColor !== 'transparent') {
+                            for (let x = 0; x < 8; x++) {
+                                ctx.fillStyle = leftColor;
+                                ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                            }
+                        }
+                    }
+                } else if (previewRotation === 2) {
+                    // Back view - mirror of front
+                    const offsetX = Math.floor((canvas.width / scale - 16) / 2);
+                    const offsetY = Math.floor((canvas.height / scale - 20) / 2);
+
+                    for (let y = 0; y < pixelData.length && y < 20; y++) {
+                        for (let x = 0; x < pixelData[y].length && x < 16; x++) {
+                            const mirroredX = 15 - x;
+                            const color = pixelData[y][mirroredX];
+                            if (color !== 'transparent') {
+                                ctx.fillStyle = color;
+                                ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                            }
+                        }
+                    }
+                }
+            }, [showAdvancedEditor, pixelData, previewRotation]);
+
+            // Draw advanced editor canvas
+            useEffect(() => {
+                if (!showAdvancedEditor || !advancedCanvasRef.current || !pixelData) return;
+
+                const canvas = advancedCanvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const pixelSize = 20;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw pixels
+                for (let y = 0; y < pixelData.length; y++) {
+                    for (let x = 0; x < pixelData[y].length; x++) {
+                        const color = pixelData[y][x];
+                        if (color !== 'transparent') {
+                            ctx.fillStyle = color;
+                            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+                        }
+                    }
+                }
+
+                // Draw grid
+                if (showGrid) {
+                    ctx.strokeStyle = '#cbd5e0';
+                    ctx.lineWidth = 1;
+                    for (let x = 0; x <= 16; x++) {
+                        ctx.beginPath();
+                        ctx.moveTo(x * pixelSize, 0);
+                        ctx.lineTo(x * pixelSize, 20 * pixelSize);
+                        ctx.stroke();
+                    }
+                    for (let y = 0; y <= 20; y++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y * pixelSize);
+                        ctx.lineTo(16 * pixelSize, y * pixelSize);
+                        ctx.stroke();
+                    }
+                }
+            }, [pixelData, showAdvancedEditor, showGrid]);
+
+            const handleCanvasClick = (e) => {
+                if (!advancedCanvasRef.current || !pixelData) return;
+
+                const canvas = advancedCanvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / 20);
+                const y = Math.floor((e.clientY - rect.top) / 20);
+
+                if (x < 0 || x >= 16 || y < 0 || y >= 20) return;
+
+                const newData = pixelData.map(row => [...row]);
+
+                if (currentTool === 'paint') {
+                    newData[y][x] = currentColor;
+                } else if (currentTool === 'erase') {
+                    newData[y][x] = 'transparent';
+                } else if (currentTool === 'eyedropper') {
+                    setCurrentColor(pixelData[y][x]);
+                } else if (currentTool === 'fill') {
+                    const targetColor = pixelData[y][x];
+                    floodFill(newData, x, y, targetColor, currentColor);
+                }
+
+                setPixelData(newData);
+            };
+
+            const floodFill = (data, x, y, targetColor, fillColor) => {
+                if (x < 0 || x >= 16 || y < 0 || y >= 20) return;
+                if (data[y][x] !== targetColor || data[y][x] === fillColor) return;
+
+                data[y][x] = fillColor;
+                floodFill(data, x + 1, y, targetColor, fillColor);
+                floodFill(data, x - 1, y, targetColor, fillColor);
+                floodFill(data, x, y + 1, targetColor, fillColor);
+                floodFill(data, x, y - 1, targetColor, fillColor);
+            };
+
+            const clearCanvas = () => {
+                const newData = pixelData.map(row => row.map(() => 'transparent'));
+                setPixelData(newData);
+            };
+
+            const loadTemplate = () => {
+                // Load the current basic design into advanced editor
+                const newData = Array(20).fill(null).map(() => Array(16).fill('transparent'));
+                
+                // Helper to darken color for shading
+                const darken = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = (num >> 16) - amt;
+                    const G = (num >> 8 & 0x00FF) - amt;
+                    const B = (num & 0x0000FF) - amt;
+                    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                        .toString(16).slice(1);
+                };
+
+                const bodyDark = darken(bodyColor, 20);
+                const wingDark = darken(wingColor, 20);
+                
+                if (birdModel === 'parrot') {
+                    // Copy parrot design
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 2; y <= 5; y++) {
+                            newData[y][x] = bodyColor;
+                        }
+                    }
+                    newData[3][9] = bodyDark;
+                    newData[4][9] = bodyDark;
+                    
+                    newData[4][10] = '#f59e0b';
+                    newData[4][11] = '#f59e0b';
+                    
+                    newData[3][7] = '#ffffff';
+                    newData[3][9] = '#ffffff';
+                    newData[3][7] = '#000000';
+                    
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 6; y <= 12; y++) {
+                            newData[y][x] = bodyColor;
+                        }
+                    }
+                    for(let y = 6; y <= 12; y++) {
+                        newData[y][9] = bodyDark;
+                    }
+                    
+                    for(let x = 4; x <= 5; x++) {
+                        for(let y = 7; y <= 11; y++) {
+                            newData[y][x] = wingColor;
+                        }
+                    }
+                    newData[8][5] = wingDark;
+                    newData[9][5] = wingDark;
+                    newData[10][5] = wingDark;
+                    
+                    for(let x = 10; x <= 11; x++) {
+                        for(let y = 7; y <= 11; y++) {
+                            newData[y][x] = wingColor;
+                        }
+                    }
+                    newData[8][10] = wingDark;
+                    newData[9][10] = wingDark;
+                    newData[10][10] = wingDark;
+                    
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 13; y <= 17; y++) {
+                            newData[y][x] = wingColor;
+                        }
+                    }
+                    newData[14][9] = wingDark;
+                    newData[15][9] = wingDark;
+                    newData[16][9] = wingDark;
+                } else {
+                    // Copy accurate Minecraft chicken design
+                    // Red Comb
+                    newData[0][7] = '#dc2626';
+                    newData[0][8] = '#dc2626';
+                    
+                    // Small Head
+                    for(let x = 7; x <= 8; x++) {
+                        for(let y = 1; y <= 2; y++) {
+                            newData[y][x] = bodyColor;
+                        }
+                    }
+                    newData[2][8] = bodyDark;
+                    
+                    // Yellow Beak
+                    newData[2][9] = '#fbbf24';
+                    
+                    // Red Wattle
+                    newData[3][7] = '#dc2626';
+                    newData[3][8] = '#dc2626';
+                    
+                    // Eyes
+                    newData[1][7] = '#000000';
+                    newData[1][8] = '#000000';
+                    
+                    // Large Body
+                    for(let x = 4; x <= 11; x++) {
+                        for(let y = 4; y <= 9; y++) {
+                            newData[y][x] = bodyColor;
+                        }
+                    }
+                    for(let y = 4; y <= 9; y++) {
+                        newData[y][11] = bodyDark;
+                    }
+                    for(let x = 4; x <= 10; x++) {
+                        newData[9][x] = bodyDark;
+                    }
+                    
+                    // Wings
+                    for(let x = 2; x <= 3; x++) {
+                        for(let y = 5; y <= 8; y++) {
+                            newData[y][x] = wingColor;
+                        }
+                    }
+                    newData[6][3] = wingDark;
+                    newData[7][3] = wingDark;
+                    
+                    for(let x = 12; x <= 13; x++) {
+                        for(let y = 5; y <= 8; y++) {
+                            newData[y][x] = wingColor;
+                        }
+                    }
+                    newData[6][12] = wingDark;
+                    newData[7][12] = wingDark;
+                    
+                    // Tail
+                    newData[10][4] = wingColor;
+                    newData[10][5] = wingColor;
+                    
+                    // Yellow Legs
+                    for(let x = 6; x <= 9; x++) {
+                        newData[10][x] = '#fbbf24';
+                        newData[11][x] = '#fbbf24';
+                        newData[12][x] = '#fbbf24';
+                    }
+                }
+                
+                setPixelData(newData);
+            };
+
+            const applyAdvancedDesign = () => {
+                // This would update the main preview to use the advanced editor data
+                setShowAdvancedEditor(false);
+            };
+
+            // Draw Minecraft bird on canvas
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const scale = 8; // Increased pixel size multiplier to make bird larger
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // If advanced editor has data, use that instead
+                if (pixelData && pixelData.some(row => row.some(pixel => pixel !== 'transparent'))) {
+                    const offsetX = Math.floor((canvas.width / scale - 16) / 2);
+                    const offsetY = Math.floor((canvas.height / scale - 20) / 2);
+                    
+                    for (let y = 0; y < pixelData.length; y++) {
+                        for (let x = 0; x < pixelData[y].length; x++) {
+                            const color = pixelData[y][x];
+                            if (color !== 'transparent') {
+                                ctx.fillStyle = color;
+                                ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                            }
+                        }
+                    }
+                    
+                    // Draw ground - FIXED position
+                    const groundY = 224;
+                    ctx.fillStyle = '#8B7355';
+                    ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                    // Grass on top of ground
+                    ctx.fillStyle = '#7CB342';
+                    ctx.fillRect(0, groundY, canvas.width, scale * 2);
+                    
+                    return;
+                }
+                
+                // Otherwise use the template-based rendering
+                // Calculate centering offset
+                const birdWidth = 16; // pixels wide
+                const birdHeight = birdModel === 'chicken' ? 14 : 20; // chickens are shorter
+                const offsetX = Math.floor((canvas.width / scale - birdWidth) / 2);
+                const offsetY = Math.floor((canvas.height / scale - birdHeight) / 2);
+                
+                // Helper function to draw a pixel (with centering offset)
+                const drawPixel = (x, y, color) => {
+                    ctx.fillStyle = color;
+                    ctx.fillRect((x + offsetX) * scale, (y + offsetY) * scale, scale, scale);
+                };
+
+                // Helper to darken color for shading
+                const darken = (color, percent) => {
+                    const num = parseInt(color.replace("#",""), 16);
+                    const amt = Math.round(2.55 * percent);
+                    const R = (num >> 16) - amt;
+                    const G = (num >> 8 & 0x00FF) - amt;
+                    const B = (num & 0x0000FF) - amt;
+                    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                        .toString(16).slice(1);
+                };
+
+                const bodyDark = darken(bodyColor, 20);
+                const wingDark = darken(wingColor, 20);
+
+                if (birdModel === 'parrot') {
+                    // Draw Minecraft Parrot (simplified pixel art)
+                    // Head
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 2; y <= 5; y++) {
+                            drawPixel(x, y, bodyColor);
+                        }
+                    }
+                    // Head dark shade
+                    drawPixel(9, 3, bodyDark);
+                    drawPixel(9, 4, bodyDark);
+                    
+                    // Beak
+                    drawPixel(10, 4, '#f59e0b');
+                    drawPixel(11, 4, '#f59e0b');
+                    
+                    // Eyes
+                    drawPixel(7, 3, '#ffffff');
+                    drawPixel(9, 3, '#ffffff');
+                    drawPixel(7, 3, '#000000'); // pupil
+                    
+                    // Body/Torso
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 6; y <= 12; y++) {
+                            drawPixel(x, y, bodyColor);
+                        }
+                    }
+                    // Body shading
+                    for(let y = 6; y <= 12; y++) {
+                        drawPixel(9, y, bodyDark);
+                    }
+                    
+                    // Left Wing
+                    for(let x = 4; x <= 5; x++) {
+                        for(let y = 7; y <= 11; y++) {
+                            drawPixel(x, y, wingColor);
+                        }
+                    }
+                    drawPixel(5, 8, wingDark);
+                    drawPixel(5, 9, wingDark);
+                    drawPixel(5, 10, wingDark);
+                    
+                    // Right Wing  
+                    for(let x = 10; x <= 11; x++) {
+                        for(let y = 7; y <= 11; y++) {
+                            drawPixel(x, y, wingColor);
+                        }
+                    }
+                    drawPixel(10, 8, wingDark);
+                    drawPixel(10, 9, wingDark);
+                    drawPixel(10, 10, wingDark);
+                    
+                    // Tail
+                    for(let x = 6; x <= 9; x++) {
+                        for(let y = 13; y <= 17; y++) {
+                            drawPixel(x, y, wingColor);
+                        }
+                    }
+                    // Tail shading
+                    drawPixel(9, 14, wingDark);
+                    drawPixel(9, 15, wingDark);
+                    drawPixel(9, 16, wingDark);
+                    
+                } else {
+                    // Draw Minecraft Chicken - Accurate proportions matching actual game
+                    // Red Comb on top of small head
+                    drawPixel(7, 0, '#dc2626');
+                    drawPixel(8, 0, '#dc2626');
+                    
+                    // Small Head - chickens have TINY heads compared to body
+                    for(let x = 7; x <= 8; x++) {
+                        for(let y = 1; y <= 2; y++) {
+                            drawPixel(x, y, bodyColor);
+                        }
+                    }
+                    drawPixel(8, 2, bodyDark); // slight shading
+                    
+                    // Yellow Beak - small, pointing forward
+                    drawPixel(9, 2, '#fbbf24');
+                    
+                    // Red Wattle under head
+                    drawPixel(7, 3, '#dc2626');
+                    drawPixel(8, 3, '#dc2626');
+                    
+                    // Eyes - simple black dots
+                    drawPixel(7, 1, '#000000');
+                    drawPixel(8, 1, '#000000');
+                    
+                    // LARGE Body - main feature, chickens are mostly body!
+                    for(let x = 4; x <= 11; x++) {
+                        for(let y = 4; y <= 9; y++) {
+                            drawPixel(x, y, bodyColor);
+                        }
+                    }
+                    // Body shading on right
+                    for(let y = 4; y <= 9; y++) {
+                        drawPixel(11, y, bodyDark);
+                    }
+                    // Bottom shading
+                    for(let x = 4; x <= 10; x++) {
+                        drawPixel(x, 9, bodyDark);
+                    }
+                    
+                    // Small Wings - folded against body
+                    for(let x = 2; x <= 3; x++) {
+                        for(let y = 5; y <= 8; y++) {
+                            drawPixel(x, y, wingColor);
+                        }
+                    }
+                    drawPixel(3, 6, wingDark);
+                    drawPixel(3, 7, wingDark);
+                    
+                    for(let x = 12; x <= 13; x++) {
+                        for(let y = 5; y <= 8; y++) {
+                            drawPixel(x, y, wingColor);
+                        }
+                    }
+                    drawPixel(12, 6, wingDark);
+                    drawPixel(12, 7, wingDark);
+                    
+                    // Tiny tail at back
+                    drawPixel(4, 10, wingColor);
+                    drawPixel(5, 10, wingColor);
+                    
+                    // Yellow Legs - thin, short
+                    for(let x = 6; x <= 9; x++) {
+                        drawPixel(x, 10, '#fbbf24');
+                        drawPixel(x, 11, '#fbbf24');
+                        drawPixel(x, 12, '#fbbf24');
+                    }
+                }
+                
+                // Draw ground - FIXED position (doesn't move between models)
+                const groundY = 224; // Fixed Y position in pixels
+                ctx.fillStyle = '#8B7355'; // Brown dirt
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                
+                // Grass on top of dirt
+                ctx.fillStyle = '#7CB342'; // Green grass
+                ctx.fillRect(0, groundY, canvas.width, scale * 2);
+                
+            }, [birdModel, bodyColor, wingColor, pixelData]);
+
+            // Text-to-Speech function
+            const speak = (text) => {
+                if (!window.speechSynthesis) return;
+                
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = language === 'es' ? 'es-MX' : 'en-US';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                window.speechSynthesis.speak(utterance);
+            };
+
+            // Make text clickable when TTS is enabled
+            const makeTextSpeakable = (text) => {
+                if (!ttsEnabled) return text;
+                
+                return (
+                    <span 
+                        style={{cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted'}}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            speak(text);
+                        }}
+                        title="Click to hear"
+                    >
+                        {text}
+                    </span>
+                );
+            };
+
+
+            const colors = [
+                { name: "Blue", value: "#3b82f6" },
+                { name: "Red", value: "#ef4444" },
+                { name: "Green", value: "#10b981" },
+                { name: "Yellow", value: "#fbbf24" },
+                { name: "Purple", value: "#8b5cf6" },
+                { name: "Pink", value: "#ec4899" },
+                { name: "Orange", value: "#f97316" },
+                { name: "Teal", value: "#14b8a6" }
+            ];
+
+            const generateUUID = () => {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    const r = Math.random() * 16 | 0;
+                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
+
+            const generateBehaviorPack = () => {
+                const identifier = `custom:${birdName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                
+                const entity = {
+                    "format_version": "1.16.0",
+                    "minecraft:entity": {
+                        "description": {
+                            "identifier": identifier,
+                            "is_spawnable": spawnMode === 'egg',
+                            "is_summonable": true,
+                            "is_experimental": false
+                        },
+                        "component_groups": {},
+                        "components": {
+                            "minecraft:type_family": {
+                                "family": ["bird", "mob"]
+                            },
+                            "minecraft:health": {
+                                "value": health,
+                                "max": health
+                            },
+                            "minecraft:collision_box": {
+                                "width": size * 0.1,
+                                "height": size * 0.1
+                            },
+                            "minecraft:movement": {
+                                "value": speed * 0.05
+                            },
+                            "minecraft:navigation.fly": {
+                                "can_path_over_water": true,
+                                "can_path_from_air": true
+                            },
+                            "minecraft:movement.fly": {},
+                            "minecraft:physics": {
+                                "has_gravity": false
+                            },
+                            "minecraft:pushable": {
+                                "is_pushable": true,
+                                "is_pushable_by_piston": true
+                            },
+                            "minecraft:behavior.float": {
+                                "priority": 0
+                            },
+                            "minecraft:behavior.panic": {
+                                "priority": 1,
+                                "speed_multiplier": 1.25
+                            },
+                            "minecraft:behavior.random_fly": {
+                                "priority": 2,
+                                "speed_multiplier": 1.0
+                            },
+                            "minecraft:behavior.look_at_player": {
+                                "priority": 3,
+                                "look_distance": 6.0,
+                                "probability": 0.02
+                            },
+                            "minecraft:behavior.random_look_around": {
+                                "priority": 4
+                            }
+                        },
+                        "events": {}
+                    }
+                };
+
+                // Add model-specific behaviors
+                if (birdModel === "chicken") {
+                    entity["minecraft:entity"].components["minecraft:behavior.lay_egg"] = {
+                        "priority": 2
+                    };
+                }
+
+                if (behavior === "friendly") {
+                    entity["minecraft:entity"].components["minecraft:tameable"] = {
+                        "probability": 0.33,
+                        "tame_items": ["wheat_seeds", "beetroot_seeds"],
+                        "tame_event": {
+                            "event": "minecraft:on_tame"
+                        }
+                    };
+                }
+
+                return entity;
+            };
+
+            const generateSpawnRules = () => {
+                if (spawnMode !== 'natural') return null;
+
+                // Map habitat to biomes
+                const biomeMap = {
+                    forest: ["forest", "birch_forest", "flower_forest", "roofed_forest"],
+                    jungle: ["jungle", "jungle_edge", "jungle_hills", "bamboo_jungle"],
+                    plains: ["plains", "sunflower_plains"],
+                    mountains: ["mountains", "mountain_edge", "stone_beach", "gravelly_mountains"],
+                    desert: ["desert", "desert_hills"]
+                };
+
+                // Map rarity to weight (higher = more common)
+                const rarityMap = {
+                    veryRare: 1,
+                    rare: 5,
+                    common: 20,
+                    veryCommon: 50
+                };
+
+                // Map group size to min/max
+                const groupMap = {
+                    alone: { min: 1, max: 1 },
+                    pair: { min: 2, max: 2 },
+                    smallGroup: { min: 3, max: 5 },
+                    largeGroup: { min: 6, max: 10 }
+                };
+
+                const identifier = `custom:${birdName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                
+                const spawnRules = {
+                    "format_version": "1.8.0",
+                    "minecraft:spawn_rules": {
+                        "description": {
+                            "identifier": identifier,
+                            "population_control": "animal"
+                        },
+                        "conditions": [
+                            {
+                                "minecraft:biome_filter": {
+                                    "test": "has_biome_tag",
+                                    "operator": "==",
+                                    "value": biomeMap[habitat][0]
+                                },
+                                "minecraft:weight": {
+                                    "default": rarityMap[spawnRarity]
+                                },
+                                "minecraft:herd": {
+                                    "min_size": groupMap[groupSize].min,
+                                    "max_size": groupMap[groupSize].max
+                                },
+                                "minecraft:spawns_on_surface": {},
+                                "minecraft:brightness_filter": {
+                                    "min": timeOfDay === 'nightOnly' ? 0 : (timeOfDay === 'dayOnly' ? 7 : 0),
+                                    "max": timeOfDay === 'nightOnly' ? 6 : (timeOfDay === 'dayOnly' ? 15 : 15)
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                return spawnRules;
+            };
+
+            const generateResourcePack = () => {
+                const identifier = `custom:${birdName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                const geometryName = birdModel === "parrot" ? "geometry.parrot" : "geometry.chicken";
+                const materialName = birdModel === "parrot" ? "parrot" : "chicken";
+                const renderController = birdModel === "parrot" ? "controller.render.parrot" : "controller.render.chicken";
+                
+                const clientEntity = {
+                    "format_version": "1.10.0",
+                    "minecraft:client_entity": {
+                        "description": {
+                            "identifier": identifier,
+                            "materials": {
+                                "default": materialName
+                            },
+                            "textures": {
+                                "default": `textures/entity/${birdName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+                            },
+                            "geometry": {
+                                "default": geometryName
+                            },
+                            "render_controllers": [renderController],
+                            "spawn_egg": {
+                                "base_color": bodyColor,
+                                "overlay_color": wingColor
+                            }
+                        }
+                    }
+                };
+
+                return clientEntity;
+            };
+
+            const generateTexture = () => {
+                const canvas = document.createElement('canvas');
+                
+                // If using advanced editor, create texture from pixel data
+                if (pixelData && pixelData.some(row => row.some(pixel => pixel !== 'transparent'))) {
+                    canvas.width = 64; // Standard Minecraft texture width
+                    canvas.height = 64; // Standard Minecraft texture height
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Fill with transparency
+                    ctx.clearRect(0, 0, 64, 64);
+                    
+                    // Minecraft chicken/parrot textures are laid out in a specific UV map format
+                    // We'll use a simplified approach: draw the custom pixels in the main body area
+                    const scale = 2; // Scale up the 16x20 design to fit better
+                    
+                    for (let y = 0; y < pixelData.length && y * scale < 64; y++) {
+                        for (let x = 0; x < pixelData[y].length && x * scale < 64; x++) {
+                            const color = pixelData[y][x];
+                            if (color !== 'transparent') {
+                                ctx.fillStyle = color;
+                                ctx.fillRect(x * scale, y * scale, scale, scale);
+                            }
+                        }
+                    }
+                    
+                    return canvas.toDataURL('image/png');
+                }
+                
+                // Otherwise, use basic color-based texture
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+
+                // Fill with body color
+                ctx.fillStyle = bodyColor;
+                ctx.fillRect(0, 0, 32, 32);
+
+                // Add wing color accent
+                ctx.fillStyle = wingColor;
+                ctx.fillRect(0, 8, 8, 8);
+                ctx.fillRect(24, 8, 8, 8);
+
+                // Add some detail
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(10, 4, 2, 2);
+                ctx.fillRect(20, 4, 2, 2);
+
+                return canvas.toDataURL('image/png');
+            };
+
+            const generateManifest = (packType, uuid1, uuid2) => {
+                return {
+                    "format_version": 2,
+                    "header": {
+                        "name": `${birdName} ${packType}`,
+                        "description": `Custom bird created with Bird Editor`,
+                        "uuid": uuid1,
+                        "version": [1, 0, 0],
+                        "min_engine_version": [1, 16, 0]
+                    },
+                    "modules": [
+                        {
+                            "type": packType === "Behavior Pack" ? "data" : "resources",
+                            "uuid": uuid2,
+                            "version": [1, 0, 0]
+                        }
+                    ]
+                };
+            };
+
+            const downloadBird = async () => {
+                const zip = new JSZip();
+                const identifier = birdName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+                // Generate UUIDs
+                const behaviorHeaderUUID = generateUUID();
+                const behaviorModuleUUID = generateUUID();
+                const resourceHeaderUUID = generateUUID();
+                const resourceModuleUUID = generateUUID();
+
+                // Create Behavior Pack
+                const behaviorPack = zip.folder("behavior_pack");
+                behaviorPack.file("manifest.json", JSON.stringify(generateManifest("Behavior Pack", behaviorHeaderUUID, behaviorModuleUUID), null, 2));
+                
+                const entities = behaviorPack.folder("entities");
+                entities.file(`${identifier}.json`, JSON.stringify(generateBehaviorPack(), null, 2));
+
+                // Add spawn rules if natural spawning
+                if (spawnMode === 'natural') {
+                    const spawnRules = behaviorPack.folder("spawn_rules");
+                    spawnRules.file(`${identifier}.json`, JSON.stringify(generateSpawnRules(), null, 2));
+                }
+
+                // Create Resource Pack
+                const resourcePack = zip.folder("resource_pack");
+                resourcePack.file("manifest.json", JSON.stringify(generateManifest("Resource Pack", resourceHeaderUUID, resourceModuleUUID), null, 2));
+                
+                const entityFolder = resourcePack.folder("entity");
+                entityFolder.file(`${identifier}.entity.json`, JSON.stringify(generateResourcePack(), null, 2));
+
+                // Add texture
+                const texturesFolder = resourcePack.folder("textures").folder("entity");
+                const textureData = generateTexture().split(',')[1];
+                texturesFolder.file(`${identifier}.png`, textureData, {base64: true});
+
+                // Generate and download
+                const content = await zip.generateAsync({type: "blob"});
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${identifier}.mcaddon`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                setDownloadSuccess(true);
+                setTimeout(() => setDownloadSuccess(false), 5000);
+            };
+
+            return (
+                <div className="container">
+                    <h1>{t.title} 🐦</h1>
+                    
+                    <div className="header-controls">
+                        <div className="language-toggle">
+                            <button 
+                                className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+                                onClick={() => setLanguage('en')}
+                            >
+                                🇺🇸 English
+                            </button>
+                            <button 
+                                className={`lang-btn ${language === 'es' ? 'active' : ''}`}
+                                onClick={() => setLanguage('es')}
+                            >
+                                🇲🇽 Español
+                            </button>
+                        </div>
+                        
+                        <button 
+                            className={`tts-toggle ${ttsEnabled ? 'active' : ''}`}
+                            onClick={() => setTtsEnabled(!ttsEnabled)}
+                        >
+                            {ttsEnabled ? t.ttsOn : t.ttsOff}
+                        </button>
+                    </div>
+                    
+                    <p className="subtitle">{t.subtitle}</p>
+
+                    <div className="info-box">
+                        <strong>📚 {t.howToUse}</strong>
+                        <ol style={{marginLeft: '20px', marginTop: '10px', lineHeight: '1.8'}}>
+                            <li>{t.step1}</li>
+                            <li>{t.step2}</li>
+                            <li>{t.step3}</li>
+                            <li>{t.step4}</li>
+                        </ol>
+                    </div>
+
+                    <div className="main-grid">
+                        <div className="panel">
+                            <h2>🎨 {t.designBird}</h2>
+                            
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {ttsEnabled ? makeTextSpeakable(t.birdName) : t.birdName}
+                                    <span className="speak-icon" onClick={() => speak(t.birdName)}>🔊</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    className="input-text"
+                                    value={birdName}
+                                    onChange={(e) => setBirdName(e.target.value)}
+                                    placeholder={t.namePlaceholder}
+                                />
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {ttsEnabled ? makeTextSpeakable(t.birdModel) : t.birdModel}
+                                    <span className="speak-icon" onClick={() => speak(t.birdModel)}>🔊</span>
+                                </label>
+                                <div className="radio-group">
+                                    <div 
+                                        className={`radio-option ${birdModel === 'parrot' ? 'selected' : ''}`}
+                                        onClick={() => setBirdModel('parrot')}
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            checked={birdModel === 'parrot'}
+                                            onChange={() => setBirdModel('parrot')}
+                                        />
+                                        <span>🦜 {t.parrot}</span>
+                                    </div>
+                                    <div 
+                                        className={`radio-option ${birdModel === 'chicken' ? 'selected' : ''}`}
+                                        onClick={() => setBirdModel('chicken')}
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            checked={birdModel === 'chicken'}
+                                            onChange={() => setBirdModel('chicken')}
+                                        />
+                                        <span>🐔 {t.chicken}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {ttsEnabled ? makeTextSpeakable(t.bodyColor) : t.bodyColor}
+                                    <span className="speak-icon" onClick={() => speak(t.bodyColor)}>🔊</span>
+                                </label>
+                                <div className="color-picker-container">
+                                    {colors.map(color => (
+                                        <div
+                                            key={color.value}
+                                            className={`color-option ${bodyColor === color.value ? 'selected' : ''}`}
+                                            style={{backgroundColor: color.value}}
+                                            onClick={() => setBodyColor(color.value)}
+                                            title={color.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {ttsEnabled ? makeTextSpeakable(t.wingColor) : t.wingColor}
+                                    <span className="speak-icon" onClick={() => speak(t.wingColor)}>🔊</span>
+                                </label>
+                                <div className="color-picker-container">
+                                    {colors.map(color => (
+                                        <div
+                                            key={color.value}
+                                            className={`color-option ${wingColor === color.value ? 'selected' : ''}`}
+                                            style={{backgroundColor: color.value}}
+                                            onClick={() => setWingColor(color.value)}
+                                            title={color.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {ttsEnabled ? makeTextSpeakable(t.behavior) : t.behavior}
+                                    <span className="speak-icon" onClick={() => speak(t.behavior)}>🔊</span>
+                                </label>
+                                <div className="radio-group">
+                                    <div 
+                                        className={`radio-option ${behavior === 'friendly' ? 'selected' : ''}`}
+                                        onClick={() => setBehavior('friendly')}
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            checked={behavior === 'friendly'}
+                                            onChange={() => setBehavior('friendly')}
+                                        />
+                                        <span>😊 {t.friendly}</span>
+                                    </div>
+                                    <div 
+                                        className={`radio-option ${behavior === 'neutral' ? 'selected' : ''}`}
+                                        onClick={() => setBehavior('neutral')}
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            checked={behavior === 'neutral'}
+                                            onChange={() => setBehavior('neutral')}
+                                        />
+                                        <span>😐 {t.neutral}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="panel">
+                            <h2>⚙️ {t.attributes}</h2>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {t.health}
+                                    <span className="speak-icon" onClick={() => speak(t.health)}>🔊</span>
+                                </label>
+                                <div className="slider-container">
+                                    <input 
+                                        type="range" 
+                                        min="5" 
+                                        max="20" 
+                                        value={health}
+                                        onChange={(e) => setHealth(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
+                                    <div className="slider-value">{health} {t.hearts}</div>
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {t.speed}
+                                    <span className="speak-icon" onClick={() => speak(t.speed)}>🔊</span>
+                                </label>
+                                <div className="slider-container">
+                                    <input 
+                                        type="range" 
+                                        min="1" 
+                                        max="10" 
+                                        value={speed}
+                                        onChange={(e) => setSpeed(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
+                                    <div className="slider-value">
+                                        {speed <= 3 ? t.slow : speed <= 7 ? t.medium : t.fast}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <label className="control-label">
+                                    {t.size}
+                                    <span className="speak-icon" onClick={() => speak(t.size)}>🔊</span>
+                                </label>
+                                <div className="slider-container">
+                                    <input 
+                                        type="range" 
+                                        min="3" 
+                                        max="10" 
+                                        value={size}
+                                        onChange={(e) => setSize(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
+                                    <div className="slider-value">
+                                        {size <= 4 ? t.small : size <= 7 ? t.medium : t.largeBird}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="control-group">
+                                <button 
+                                    className="advanced-editor-btn"
+                                    onClick={() => setShowAdvancedEditor(true)}
+                                >
+                                    🎨 {t.advancedEditorBtn}
+                                </button>
+                                
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr auto', gap: '20px', alignItems: 'start'}}>
+                                    <div>
+                                        <label className="control-label">
+                                            {t.preview}
+                                            <span className="speak-icon" onClick={() => speak(t.preview)}>🔊</span>
+                                        </label>
+                                        <div className="preview-box">
+                                            <div className="zoom-controls">
+                                                <button 
+                                                    className="zoom-btn" 
+                                                    onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
+                                                    disabled={zoom <= 0.5}
+                                                    title="Zoom Out"
+                                                >
+                                                    −
+                                                </button>
+                                                <div className="zoom-level">{Math.round(zoom * 100)}%</div>
+                                                <button 
+                                                    className="zoom-btn" 
+                                                    onClick={() => setZoom(Math.min(3, zoom + 0.25))}
+                                                    disabled={zoom >= 3}
+                                                    title="Zoom In"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                            <div className="cloud cloud-1"></div>
+                                            <div className="cloud cloud-2"></div>
+                                            <div className="canvas-container">
+                                                <canvas 
+                                                    ref={canvasRef}
+                                                    width={64 * 4}
+                                                    height={80 * 4}
+                                                    className="minecraft-canvas"
+                                                    style={{
+                                                        transform: `scale(${(size / 5) * zoom})`,
+                                                        transition: 'transform 0.3s ease'
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {spawnMode === 'egg' && (
+                                        <div style={{minWidth: '120px'}}>
+                                            <label className="control-label" style={{fontSize: '1em'}}>
+                                                {t.spawnEggPreview}
+                                                <span className="speak-icon" onClick={() => speak(t.spawnEggPreview)}>🔊</span>
+                                            </label>
+                                            <div style={{
+                                                background: 'linear-gradient(135deg, #87CEEB 0%, #98D8E8 100%)',
+                                                borderRadius: '10px',
+                                                padding: '20px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minHeight: '150px'
+                                            }}>
+                                                <div style={{
+                                                    position: 'relative',
+                                                    width: '80px',
+                                                    height: '100px'
+                                                }}>
+                                                    {/* Egg base color */}
+                                                    <div style={{
+                                                        width: '80px',
+                                                        height: '100px',
+                                                        background: bodyColor,
+                                                        borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
+                                                        position: 'absolute',
+                                                        boxShadow: 'inset -10px -10px 20px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.3)'
+                                                    }}/>
+                                                    {/* Egg spots/pattern using wing color */}
+                                                    <div style={{
+                                                        width: '20px',
+                                                        height: '20px',
+                                                        background: wingColor,
+                                                        borderRadius: '50%',
+                                                        position: 'absolute',
+                                                        top: '25px',
+                                                        left: '15px',
+                                                        opacity: 0.8
+                                                    }}/>
+                                                    <div style={{
+                                                        width: '15px',
+                                                        height: '15px',
+                                                        background: wingColor,
+                                                        borderRadius: '50%',
+                                                        position: 'absolute',
+                                                        top: '50px',
+                                                        right: '15px',
+                                                        opacity: 0.8
+                                                    }}/>
+                                                    <div style={{
+                                                        width: '12px',
+                                                        height: '12px',
+                                                        background: wingColor,
+                                                        borderRadius: '50%',
+                                                        position: 'absolute',
+                                                        top: '35px',
+                                                        right: '25px',
+                                                        opacity: 0.8
+                                                    }}/>
+                                                    <div style={{
+                                                        width: '18px',
+                                                        height: '18px',
+                                                        background: wingColor,
+                                                        borderRadius: '50%',
+                                                        position: 'absolute',
+                                                        bottom: '15px',
+                                                        left: '20px',
+                                                        opacity: 0.8
+                                                    }}/>
+                                                </div>
+                                            </div>
+                                            <p style={{
+                                                fontSize: '0.85em',
+                                                color: '#718096',
+                                                marginTop: '10px',
+                                                textAlign: 'center'
+                                            }}>
+                                                Base: Body Color<br/>
+                                                Spots: Wing Color
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="panel" style={{marginBottom: '30px'}}>
+                        <h2>🥚 {t.spawning}</h2>
+                        
+                        <div className="control-group">
+                            <label className="control-label">
+                                {t.spawnMode}
+                                <span className="speak-icon" onClick={() => speak(t.spawnMode)}>🔊</span>
+                            </label>
+                            <div className="radio-group">
+                                <div 
+                                    className={`radio-option ${spawnMode === 'egg' ? 'selected' : ''}`}
+                                    onClick={() => setSpawnMode('egg')}
+                                >
+                                    <input 
+                                        type="radio" 
+                                        checked={spawnMode === 'egg'}
+                                        onChange={() => setSpawnMode('egg')}
+                                    />
+                                    <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+                                        <strong>🥚 {t.spawnEgg}</strong>
+                                        <small style={{color: '#718096'}}>{t.spawnEggDesc}</small>
+                                    </div>
+                                </div>
+                                <div 
+                                    className={`radio-option ${spawnMode === 'natural' ? 'selected' : ''}`}
+                                    onClick={() => setSpawnMode('natural')}
+                                >
+                                    <input 
+                                        type="radio" 
+                                        checked={spawnMode === 'natural'}
+                                        onChange={() => setSpawnMode('natural')}
+                                    />
+                                    <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+                                        <strong>🌍 {t.naturalSpawn}</strong>
+                                        <small style={{color: '#718096'}}>{t.naturalSpawnDesc}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {spawnMode === 'natural' && (
+                            <>
+                                <div className="control-group">
+                                    <label className="control-label">
+                                        {t.habitat}
+                                        <span className="speak-icon" onClick={() => speak(t.habitat)}>🔊</span>
+                                    </label>
+                                    <div className="radio-group">
+                                        <div 
+                                            className={`radio-option ${habitat === 'forest' ? 'selected' : ''}`}
+                                            onClick={() => setHabitat('forest')}
+                                        >
+                                            <input type="radio" checked={habitat === 'forest'} onChange={() => setHabitat('forest')} />
+                                            <span>{t.forest}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${habitat === 'jungle' ? 'selected' : ''}`}
+                                            onClick={() => setHabitat('jungle')}
+                                        >
+                                            <input type="radio" checked={habitat === 'jungle'} onChange={() => setHabitat('jungle')} />
+                                            <span>{t.jungle}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${habitat === 'plains' ? 'selected' : ''}`}
+                                            onClick={() => setHabitat('plains')}
+                                        >
+                                            <input type="radio" checked={habitat === 'plains'} onChange={() => setHabitat('plains')} />
+                                            <span>{t.plains}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${habitat === 'mountains' ? 'selected' : ''}`}
+                                            onClick={() => setHabitat('mountains')}
+                                        >
+                                            <input type="radio" checked={habitat === 'mountains'} onChange={() => setHabitat('mountains')} />
+                                            <span>{t.mountains}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${habitat === 'desert' ? 'selected' : ''}`}
+                                            onClick={() => setHabitat('desert')}
+                                        >
+                                            <input type="radio" checked={habitat === 'desert'} onChange={() => setHabitat('desert')} />
+                                            <span>{t.desert}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">
+                                        {t.spawnRarity}
+                                        <span className="speak-icon" onClick={() => speak(t.spawnRarity)}>🔊</span>
+                                    </label>
+                                    <div className="radio-group">
+                                        <div 
+                                            className={`radio-option ${spawnRarity === 'veryRare' ? 'selected' : ''}`}
+                                            onClick={() => setSpawnRarity('veryRare')}
+                                        >
+                                            <input type="radio" checked={spawnRarity === 'veryRare'} onChange={() => setSpawnRarity('veryRare')} />
+                                            <span>{t.veryRare}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${spawnRarity === 'rare' ? 'selected' : ''}`}
+                                            onClick={() => setSpawnRarity('rare')}
+                                        >
+                                            <input type="radio" checked={spawnRarity === 'rare'} onChange={() => setSpawnRarity('rare')} />
+                                            <span>{t.rare}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${spawnRarity === 'common' ? 'selected' : ''}`}
+                                            onClick={() => setSpawnRarity('common')}
+                                        >
+                                            <input type="radio" checked={spawnRarity === 'common'} onChange={() => setSpawnRarity('common')} />
+                                            <span>{t.common}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${spawnRarity === 'veryCommon' ? 'selected' : ''}`}
+                                            onClick={() => setSpawnRarity('veryCommon')}
+                                        >
+                                            <input type="radio" checked={spawnRarity === 'veryCommon'} onChange={() => setSpawnRarity('veryCommon')} />
+                                            <span>{t.veryCommon}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">
+                                        {t.groupSize}
+                                        <span className="speak-icon" onClick={() => speak(t.groupSize)}>🔊</span>
+                                    </label>
+                                    <div className="radio-group">
+                                        <div 
+                                            className={`radio-option ${groupSize === 'alone' ? 'selected' : ''}`}
+                                            onClick={() => setGroupSize('alone')}
+                                        >
+                                            <input type="radio" checked={groupSize === 'alone'} onChange={() => setGroupSize('alone')} />
+                                            <span>{t.alone}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${groupSize === 'pair' ? 'selected' : ''}`}
+                                            onClick={() => setGroupSize('pair')}
+                                        >
+                                            <input type="radio" checked={groupSize === 'pair'} onChange={() => setGroupSize('pair')} />
+                                            <span>{t.pair}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${groupSize === 'smallGroup' ? 'selected' : ''}`}
+                                            onClick={() => setGroupSize('smallGroup')}
+                                        >
+                                            <input type="radio" checked={groupSize === 'smallGroup'} onChange={() => setGroupSize('smallGroup')} />
+                                            <span>{t.smallGroup}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${groupSize === 'largeGroup' ? 'selected' : ''}`}
+                                            onClick={() => setGroupSize('largeGroup')}
+                                        >
+                                            <input type="radio" checked={groupSize === 'largeGroup'} onChange={() => setGroupSize('largeGroup')} />
+                                            <span>{t.largeGroup}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">
+                                        {t.timeOfDay}
+                                        <span className="speak-icon" onClick={() => speak(t.timeOfDay)}>🔊</span>
+                                    </label>
+                                    <div className="radio-group">
+                                        <div 
+                                            className={`radio-option ${timeOfDay === 'anytime' ? 'selected' : ''}`}
+                                            onClick={() => setTimeOfDay('anytime')}
+                                        >
+                                            <input type="radio" checked={timeOfDay === 'anytime'} onChange={() => setTimeOfDay('anytime')} />
+                                            <span>{t.anytime}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${timeOfDay === 'dayOnly' ? 'selected' : ''}`}
+                                            onClick={() => setTimeOfDay('dayOnly')}
+                                        >
+                                            <input type="radio" checked={timeOfDay === 'dayOnly'} onChange={() => setTimeOfDay('dayOnly')} />
+                                            <span>{t.dayOnly}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${timeOfDay === 'nightOnly' ? 'selected' : ''}`}
+                                            onClick={() => setTimeOfDay('nightOnly')}
+                                        >
+                                            <input type="radio" checked={timeOfDay === 'nightOnly'} onChange={() => setTimeOfDay('nightOnly')} />
+                                            <span>{t.nightOnly}</span>
+                                        </div>
+                                        <div 
+                                            className={`radio-option ${timeOfDay === 'dawnDusk' ? 'selected' : ''}`}
+                                            onClick={() => setTimeOfDay('dawnDusk')}
+                                        >
+                                            <input type="radio" checked={timeOfDay === 'dawnDusk'} onChange={() => setTimeOfDay('dawnDusk')} />
+                                            <span>{t.dawnDusk}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="button-group">
+                        <button className="btn btn-primary" onClick={() => {
+                            setBirdName("My Awesome Bird");
+                            setBodyColor("#3b82f6");
+                            setWingColor("#1e40af");
+                            setHealth(10);
+                            setSpeed(5);
+                            setSize(5);
+                            setBehavior("friendly");
+                            setBirdModel("parrot");
+                            setZoom(1);
+                            setSpawnMode('egg');
+                            setHabitat('forest');
+                            setSpawnRarity('common');
+                            setGroupSize('alone');
+                            setTimeOfDay('anytime');
+                        }}>
+                            🔄 {t.startOver}
+                        </button>
+                        <button className="btn btn-success" onClick={downloadBird}>
+                            📥 {t.download}
+                        </button>
+                    </div>
+
+                    {downloadSuccess && (
+                        <div className="success-message">
+                            🎉 {t.success} "{birdName}" {t.successMsg}
+                            <br/>{t.importMsg} 🐦
+                        </div>
+                    )}
+
+                    {showAdvancedEditor && (
+                        <div className="editor-modal">
+                            <div className="editor-content">
+                                <div className="editor-header">
+                                    <h2>🎨 {t.advancedEditor}</h2>
+                                    <button className="editor-close" onClick={() => setShowAdvancedEditor(false)}>
+                                        ✕
+                                    </button>
+                                </div>
+
+                                <div className="editor-grid">
+                                    <div className="canvas-area">
+                                        <div style={{marginBottom: '10px', color: '#718096', fontSize: '0.9em'}}>
+                                            {t.textureInfo}
+                                        </div>
+                                        <canvas
+                                            ref={advancedCanvasRef}
+                                            width={320}
+                                            height={400}
+                                            className="pixel-canvas"
+                                            onClick={handleCanvasClick}
+                                            onMouseMove={(e) => {
+                                                if (e.buttons === 1) handleCanvasClick(e);
+                                            }}
+                                        />
+                                        <div className="canvas-controls">
+                                            <button className="tool-btn" onClick={loadTemplate}>
+                                                📋 {t.useTemplate}
+                                            </button>
+                                            <button className="tool-btn" onClick={clearCanvas}>
+                                                🗑️ {t.clearCanvas}
+                                            </button>
+                                            <button 
+                                                className={`tool-btn ${showGrid ? 'active' : ''}`}
+                                                onClick={() => setShowGrid(!showGrid)}
+                                            >
+                                                # {t.gridToggle}
+                                            </button>
+                                            <button className="btn btn-success" onClick={applyAdvancedDesign}>
+                                                ✓ Apply & Close
+                                            </button>
+                                        </div>
+                                        
+                                        <div style={{marginTop: '20px', background: '#f7fafc', padding: '15px', borderRadius: '10px', border: '2px solid #e2e8f0'}}>
+                                            <div style={{marginBottom: '10px', fontWeight: 'bold', color: '#2d3748'}}>
+                                                🔄 {t.rotatePreview}
+                                            </div>
+                                            <div style={{display: 'flex', gap: '10px', marginBottom: '15px'}}>
+                                                <button 
+                                                    className={`tool-btn ${previewRotation === 0 ? 'active' : ''}`}
+                                                    onClick={() => setPreviewRotation(0)}
+                                                >
+                                                    {t.frontView}
+                                                </button>
+                                                <button 
+                                                    className={`tool-btn ${previewRotation === 1 ? 'active' : ''}`}
+                                                    onClick={() => setPreviewRotation(1)}
+                                                >
+                                                    {t.sideView}
+                                                </button>
+                                                <button 
+                                                    className={`tool-btn ${previewRotation === 2 ? 'active' : ''}`}
+                                                    onClick={() => setPreviewRotation(2)}
+                                                >
+                                                    {t.backView}
+                                                </button>
+                                            </div>
+                                            <canvas 
+                                                ref={preview3DRef}
+                                                width={200}
+                                                height={240}
+                                                style={{
+                                                    width: '100%',
+                                                    imageRendering: 'pixelated',
+                                                    background: 'linear-gradient(135deg, #87CEEB 0%, #98D8E8 100%)',
+                                                    borderRadius: '8px'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="tool-panel">
+                                        <div className="tool-section">
+                                            <h3>{t.tools}</h3>
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                                                <button 
+                                                    className={`tool-btn ${currentTool === 'paint' ? 'active' : ''}`}
+                                                    onClick={() => setCurrentTool('paint')}
+                                                >
+                                                    {t.paintTool}
+                                                </button>
+                                                <button 
+                                                    className={`tool-btn ${currentTool === 'erase' ? 'active' : ''}`}
+                                                    onClick={() => setCurrentTool('erase')}
+                                                >
+                                                    {t.eraseTool}
+                                                </button>
+                                                <button 
+                                                    className={`tool-btn ${currentTool === 'fill' ? 'active' : ''}`}
+                                                    onClick={() => setCurrentTool('fill')}
+                                                >
+                                                    {t.fillTool}
+                                                </button>
+                                                <button 
+                                                    className={`tool-btn ${currentTool === 'eyedropper' ? 'active' : ''}`}
+                                                    onClick={() => setCurrentTool('eyedropper')}
+                                                >
+                                                    {t.eyedropperTool}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="tool-section">
+                                            <h3>{t.currentColor}</h3>
+                                            <div 
+                                                style={{
+                                                    width: '100%',
+                                                    height: '50px',
+                                                    background: currentColor === 'transparent' ? 
+                                                        'repeating-conic-gradient(#e5e7eb 0% 25%, #ffffff 0% 50%) 50% / 20px 20px' : 
+                                                        currentColor,
+                                                    borderRadius: '8px',
+                                                    border: '3px solid #2d3748'
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="tool-section">
+                                            <h3>{t.colorPalette}</h3>
+                                            <div className="color-grid">
+                                                {pixelColors.map((color, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className={`color-swatch ${currentColor === color ? 'active' : ''}`}
+                                                        style={{
+                                                            background: color === 'transparent' ?
+                                                                'repeating-conic-gradient(#e5e7eb 0% 25%, #ffffff 0% 50%) 50% / 10px 10px' :
+                                                                color
+                                                        }}
+                                                        onClick={() => setCurrentColor(color)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<BirdEditor />, document.getElementById('root'));
+    </script>
+</body>
+</html>
