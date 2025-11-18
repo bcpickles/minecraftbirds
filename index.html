@@ -1679,11 +1679,11 @@
                                 "max": health
                             },
                             "minecraft:collision_box": {
-                                "width": birdModel === "chicken" ? size * 0.06 : size * 0.05,
-                                "height": birdModel === "chicken" ? size * 0.06 : size * 0.08
+                                "width": birdModel === "chicken" ? size * 0.06 : size * 0.06,
+                                "height": birdModel === "chicken" ? size * 0.06 : size * 0.09
                             },
                             "minecraft:scale": {
-                                "value": size * 0.15
+                                "value": birdModel === "chicken" ? size * 0.15 : size * 0.12
                             },
                             "minecraft:pushable": {
                                 "is_pushable": true,
@@ -1800,6 +1800,17 @@
                         },
                         "minecraft:behavior.random_look_around": {
                             "priority": 5
+                        },
+                        // Sitting behavior (parrots can sit)
+                        "minecraft:behavior.stay_while_sitting": {
+                            "priority": 1
+                        },
+                        // Damage sensor to ensure entity responds to damage
+                        "minecraft:damage_sensor": {
+                            "triggers": {
+                                "cause": "all",
+                                "deals_damage": true
+                            }
                         }
                     });
                 }
@@ -1908,7 +1919,7 @@
 
             const generateResourcePack = () => {
                 const identifier = `custom:${birdName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-                const geometryName = birdModel === "parrot" ? "geometry.parrot" : "geometry.chicken";
+                const geometryName = birdModel === "parrot" ? "geometry.parrot.v1.8" : "geometry.chicken";
                 const materialName = birdModel === "parrot" ? "parrot" : "chicken";
                 const renderController = birdModel === "parrot" ? "controller.render.parrot" : "controller.render.chicken";
                 
@@ -1932,6 +1943,7 @@
                                 "baby_transform": "animation.chicken.baby_transform"
                             } : {
                                 "flying": "animation.parrot.flying",
+                                "moving": "animation.parrot.moving",
                                 "look_at_target": "animation.common.look_at_target",
                                 "baby_transform": "animation.parrot.baby_transform"
                             },
@@ -1941,7 +1953,8 @@
                                     "look_at_target",
                                     { "baby_transform": "query.is_baby" }
                                 ] : [
-                                    "flying",
+                                    { "flying": "!query.is_on_ground" },
+                                    { "moving": "query.modified_move_speed" },
                                     "look_at_target",
                                     { "baby_transform": "query.is_baby" }
                                 ]
@@ -2190,6 +2203,21 @@
                     ctx.fillRect(10, 22, 4, 4);
                     ctx.fillStyle = wingDark;
                     ctx.fillRect(14, 26, 4, 4);
+                    
+                    // LEGS - orange/yellow with shading (separate from body color)
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(2, 22, 2, 4);
+                    ctx.fillStyle = lighten('#f59e0b', 20);
+                    ctx.fillRect(2, 22, 1, 2);
+                    ctx.fillStyle = darken('#f59e0b', 20);
+                    ctx.fillRect(3, 24, 1, 2);
+                    
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(4, 22, 2, 4);
+                    ctx.fillStyle = lighten('#f59e0b', 20);
+                    ctx.fillRect(4, 22, 1, 2);
+                    ctx.fillStyle = darken('#f59e0b', 20);
+                    ctx.fillRect(5, 24, 1, 2);
                 }
 
                 return canvas.toDataURL('image/png');
