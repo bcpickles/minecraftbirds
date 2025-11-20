@@ -1780,7 +1780,7 @@
                         },
                         "minecraft:movement.fly": {},
                         "minecraft:physics": {
-                            "has_gravity": false
+                            "has_gravity": true
                         },
                         // Random flying
                         "minecraft:behavior.random_fly": {
@@ -2146,78 +2146,113 @@
                     ctx.fillRect(5, 30, 1, 2);
                     
                 } else {
-                    // Parrot UV map is 32x32
-                    canvas.width = 32;
+                    // Parrot UV map is 64x32 (same as chicken)
+                    canvas.width = 64;
                     canvas.height = 32;
                     const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, 32, 32);
+                    ctx.clearRect(0, 0, 64, 32);
                     
-                    // HEAD - body color with shading
-                    ctx.fillStyle = bodyColor;
-                    ctx.fillRect(2, 2, 8, 8);
+                    // Parrots use similar UV layout to chickens but smaller head
+                    // HEAD UV mapping (0-32, 0-8) - smaller head than chicken
+                    // Top of head
                     ctx.fillStyle = bodyLight;
-                    ctx.fillRect(2, 2, 4, 4);
+                    ctx.fillRect(0, 0, 4, 4);
                     ctx.fillStyle = bodyDark;
-                    ctx.fillRect(8, 6, 2, 4);
+                    ctx.fillRect(3, 0, 1, 4);
                     
-                    // EYES - black
+                    // Bottom of head
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(4, 0, 4, 4);
+                    
+                    // Right side
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(8, 0, 4, 4);
+                    
+                    // Front face
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(12, 0, 4, 4);
+                    // Eyes - black
                     ctx.fillStyle = '#000000';
-                    ctx.fillRect(4, 4, 2, 2);
-                    ctx.fillRect(8, 4, 2, 2);
-                    
-                    // BEAK - orange with shading
+                    ctx.fillRect(13, 1, 1, 1);
+                    ctx.fillRect(15, 1, 1, 1);
+                    // Beak - orange
                     ctx.fillStyle = '#f59e0b';
-                    ctx.fillRect(5, 6, 4, 2);
-                    ctx.fillStyle = lighten('#f59e0b', 25);
-                    ctx.fillRect(5, 6, 2, 1);
-                    ctx.fillStyle = darken('#f59e0b', 25);
-                    ctx.fillRect(7, 7, 2, 1);
+                    ctx.fillRect(13, 2, 2, 1);
+                    ctx.fillStyle = darken('#f59e0b', 20);
+                    ctx.fillRect(14, 2, 1, 1);
                     
-                    // BODY - body color with shading
-                    ctx.fillStyle = bodyColor;
-                    ctx.fillRect(2, 10, 12, 12);
-                    ctx.fillStyle = bodyLight;
-                    ctx.fillRect(2, 10, 6, 6);
+                    // Left side
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(16, 0, 4, 4);
+                    
+                    // Back
                     ctx.fillStyle = bodyDark;
-                    ctx.fillRect(8, 16, 6, 6);
+                    ctx.fillRect(20, 0, 4, 4);
+                    
+                    // BODY (0, 9) - smaller than chicken
+                    // Top
+                    ctx.fillStyle = bodyLight;
+                    ctx.fillRect(0, 9, 8, 3);
+                    
+                    // Bottom
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(8, 9, 8, 3);
+                    
+                    // Front
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(16, 9, 8, 8);
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(23, 9, 1, 8);
+                    
+                    // Back
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(24, 9, 8, 8);
+                    
+                    // Right side
+                    ctx.fillStyle = bodyDark;
+                    ctx.fillRect(8, 12, 3, 8);
+                    
+                    // Left side
+                    ctx.fillStyle = bodyDarker;
+                    ctx.fillRect(11, 12, 3, 8);
                     
                     // WINGS - wing color with shading
                     ctx.fillStyle = wingColor;
-                    ctx.fillRect(14, 10, 8, 10);
+                    ctx.fillRect(32, 9, 6, 6);
                     ctx.fillStyle = wingLight;
-                    ctx.fillRect(14, 10, 4, 5);
+                    ctx.fillRect(32, 9, 3, 3);
                     ctx.fillStyle = wingDark;
-                    ctx.fillRect(18, 15, 4, 5);
+                    ctx.fillRect(35, 12, 3, 3);
                     
                     ctx.fillStyle = wingColor;
-                    ctx.fillRect(22, 10, 8, 10);
+                    ctx.fillRect(38, 9, 6, 6);
                     ctx.fillStyle = wingLight;
-                    ctx.fillRect(22, 10, 4, 5);
+                    ctx.fillRect(38, 9, 3, 3);
                     ctx.fillStyle = wingDark;
-                    ctx.fillRect(26, 15, 4, 5);
+                    ctx.fillRect(41, 12, 3, 3);
                     
-                    // TAIL - wing color with shading
+                    // TAIL - wing color
                     ctx.fillStyle = wingColor;
-                    ctx.fillRect(10, 22, 8, 8);
+                    ctx.fillRect(44, 9, 6, 6);
                     ctx.fillStyle = wingLight;
-                    ctx.fillRect(10, 22, 4, 4);
+                    ctx.fillRect(44, 9, 3, 3);
                     ctx.fillStyle = wingDark;
-                    ctx.fillRect(14, 26, 4, 4);
+                    ctx.fillRect(47, 12, 3, 3);
                     
-                    // LEGS - orange/yellow with shading (separate from body color)
+                    // LEGS - orange with shading (matching beak)
                     ctx.fillStyle = '#f59e0b';
-                    ctx.fillRect(2, 22, 2, 4);
+                    ctx.fillRect(0, 20, 2, 4);
                     ctx.fillStyle = lighten('#f59e0b', 20);
-                    ctx.fillRect(2, 22, 1, 2);
+                    ctx.fillRect(0, 20, 1, 2);
                     ctx.fillStyle = darken('#f59e0b', 20);
-                    ctx.fillRect(3, 24, 1, 2);
+                    ctx.fillRect(1, 22, 1, 2);
                     
                     ctx.fillStyle = '#f59e0b';
-                    ctx.fillRect(4, 22, 2, 4);
+                    ctx.fillRect(2, 20, 2, 4);
                     ctx.fillStyle = lighten('#f59e0b', 20);
-                    ctx.fillRect(4, 22, 1, 2);
+                    ctx.fillRect(2, 20, 1, 2);
                     ctx.fillStyle = darken('#f59e0b', 20);
-                    ctx.fillRect(5, 24, 1, 2);
+                    ctx.fillRect(3, 22, 1, 2);
                 }
 
                 return canvas.toDataURL('image/png');
